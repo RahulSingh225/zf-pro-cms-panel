@@ -149,10 +149,15 @@
 
 import React, { FC, useRef } from "react";
 
+interface SkuOption {
+  skuName: string;
+  skuCode: string;
+}
+
 interface GenerateQRCodesProps {
   categories: string[];          // Category names
   subCategories: string[];       // Subcategory names based on selected category
-  skuList: string[];             // SKU names based on selected subcategory
+  skuList: SkuOption[];          // SKU objects with name and code
   isSubCategoriesLoading?: boolean;
   isSkusLoading?: boolean;
   hasSelectedCategory?: boolean;
@@ -280,8 +285,8 @@ const GenerateQRCodes: FC<GenerateQRCodesProps> = ({
             </option>
 
             {skuList.map((sku) => (
-              <option key={sku} value={sku}>
-                {sku}
+              <option key={sku.skuCode} value={sku.skuName}>
+                {sku.skuName} ({sku.skuCode})
               </option>
             ))}
           </select>

@@ -248,7 +248,7 @@ const QrGeneration: FC = () => {
             <GenerateQRCodes
                 categories={categories.map(c => c.categoryName)}
                 subCategories={subCategories.map(s => s.subCategoryName)}
-                skuList={skus.map(s => s.skuName)}
+                skuList={skus.map(s => ({ skuName: s.skuName, skuCode: s.skuCode }))}
                 onCategoryChange={handleCategoryChange}
                 onSubCategoryChange={handleSubCategoryChange}
                 onSubmit={handleGenerate}
