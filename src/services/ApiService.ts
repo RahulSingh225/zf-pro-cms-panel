@@ -1093,6 +1093,11 @@ export const deleteUserAccount = async (mobile: string) => {
     return api.delete('user/delete-account', { data: { mobile } });
 };
 
+export const deleteAccountPreview = async (mobile: string) => {
+    return api.post('user/delete-account/preview', { mobile });
+};
+
+
 // ─── Service Config (Evolve Admin only) ──────────────────────────────────────
 
 export const getDigilockerProviderConfig = async () => {
