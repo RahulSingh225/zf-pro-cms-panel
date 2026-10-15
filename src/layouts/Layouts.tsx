@@ -60,6 +60,7 @@ export const navItems: NavItem[] = [
         ]
     },
     { id: 'delete-account', label: 'Delete Account', icon: 'fas fa-user-times', path: '/admin-delete-account' },
+    { id: 'price-list', label: 'Price List', icon: 'fas fa-file-pdf', path: '/price-list' },
     { id: 'service-config', label: 'Service Config', icon: 'fas fa-sliders-h', path: '/service-config' },
 ];
 

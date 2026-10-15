@@ -1107,3 +1107,28 @@ export const getDigilockerProviderConfig = async () => {
 export const updateDigilockerProviderConfig = async (activeProvider: 'TENACIO' | 'SUREPASS') => {
     return api.put('masters/digilocker-provider', { activeProvider });
 };
+
+// Price List Management APIs
+export const getAllPriceLists = async (page: number = 1, limit: number = 10, search?: string) => {
+    return api.get('price-list/all', {
+        params: { page, limit, search }
+    }).then(res => res);
+};
+
+export const addPriceList = async (formData: FormData) => {
+    return api.post('price-list', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }).then(res => res);
+};
+
+export const editPriceList = async (id: number, formData: FormData) => {
+    return api.put(`price-list/${id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }).then(res => res);
+};
+
+export const deletePriceList = async (id: number) => {
+    return api.delete(`price-list/${id}`).then(res => res);
+};
+
+

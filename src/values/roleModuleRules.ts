@@ -23,11 +23,12 @@ export const moduleRoutes: Record<string, string[]> = {
   integrations: ["/integrations"],
   "delete-account": ["/admin-delete-account"],
   "service-config": ["/service-config"],
+  "price-list": ["/price-list"],
 };
 
 const allModules = Object.keys(moduleRoutes);
 // service-config is restricted to Evolve Admin only; all other "all-access" roles get everything else.
-const allModulesExceptServiceConfig = allModules.filter(m => m !== 'service-config');
+const allModulesExceptServiceConfig = allModules.filter(m => m !== 'service-config' && m !== 'price-list');
 
 // Define which modules are accessible by each role
 export const roleModuleAccess: Record<number, string[]> = {
