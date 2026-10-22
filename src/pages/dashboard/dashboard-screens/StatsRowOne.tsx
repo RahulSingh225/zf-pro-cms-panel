@@ -3,8 +3,13 @@ import { useNavigate } from "react-router-dom";
 import Card from "../dashboard-screens/Card";
 import { FaCoins, FaGift, FaUsers, FaUserCheck, FaUserPlus, FaQrcode, FaPercent, FaUserClock, FaWallet } from "react-icons/fa";
 import { getMemberCount, getScannedPoints, getRedeemedPoints, getExecutiveStats } from "../../../services/ApiService";
+import { GlobalFilterValues } from "./GlobalFilters";
 
-const StatsRowOne: React.FC = () => {
+interface StatsRowOneProps {
+    filters?: GlobalFilterValues;
+}
+
+const StatsRowOne: React.FC<StatsRowOneProps> = ({ filters }) => {
     const navigate = useNavigate();
 
     // Original stats
@@ -20,6 +25,12 @@ const StatsRowOne: React.FC = () => {
     // New executive stats from API
     const [execStats, setExecStats] = useState({
         monthlyRegisteredUsers: 0,
+        registrationsGrowth: 0,
+        registrationsGrowthLabel: "vs last month",
+        pointsGrowth: 0,
+        pointsGrowthLabel: "vs last month",
+        totalBonusPoints: 0,
+        totalPointsScanned: 0,
         monthlyScans: 0,
         monthlyActiveUsers: 0,
         outstandingLiability: 0,
@@ -81,18 +92,35 @@ const StatsRowOne: React.FC = () => {
         }
     };
 
-    const fetchExecutiveStats = async () => {
+    const fetchExecutiveStats = async (dateFilter?: string) => {
         try {
             setExecLoading(true);
-            const response = await getExecutiveStats();
+            const params: any = {};
+            if (dateFilter && dateFilter !== "all") {
+                params.range = dateFilter;
+            }
+            const response = await getExecutiveStats(params);
             const data = response?.data?.data || {};
             setExecStats({
                 monthlyRegisteredUsers: data.monthlyRegisteredUsers ?? 0,
+                registrationsGrowth: data.registrationsGrowth ?? 0,
+                registrationsGrowthLabel: data.registrationsGrowthLabel ?? "vs last month",
+                pointsGrowth: data.pointsGrowth ?? 0,
+                pointsGrowthLabel: data.pointsGrowthLabel ?? "vs last month",
+                totalBonusPoints: data.totalBonusPoints ?? 0,
+                totalPointsScanned: data.totalPointsScanned ?? 0,
                 monthlyScans: data.monthlyScans ?? 0,
                 monthlyActiveUsers: data.monthlyActiveUsers ?? 0,
                 outstandingLiability: data.outstandingLiability ?? 0,
                 redemptionRate: data.redemptionRate ?? 0
             });
+            if (data.totalPointsScanned !== undefined || data.totalBonusPoints !== undefined) {
+                setScannedPoints(prev => ({
+                    ...prev,
+                    totalPointsScanned: data.totalPointsScanned ?? prev.totalPointsScanned,
+                    totalBonusPoints: data.totalBonusPoints ?? prev.totalBonusPoints
+                }));
+            }
         } catch (error) {
             console.error("Executive stats error:", error);
         } finally {
@@ -100,13 +128,27 @@ const StatsRowOne: React.FC = () => {
         }
     };
 
+    const pointsGrowthText = execStats.pointsGrowth > 0
+        ? `+${execStats.pointsGrowth}% ${execStats.pointsGrowthLabel}`
+        : execStats.pointsGrowth < 0
+            ? `${execStats.pointsGrowth}% ${execStats.pointsGrowthLabel}`
+            : `0.0% ${execStats.pointsGrowthLabel}`;
+    const pointsGrowthColor = execStats.pointsGrowth >= 0 ? "text-green-600" : "text-red-600";
+
+    const regGrowthText = execStats.registrationsGrowth > 0
+        ? `+${execStats.registrationsGrowth}% ${execStats.registrationsGrowthLabel}`
+        : execStats.registrationsGrowth < 0
+            ? `${execStats.registrationsGrowth}% ${execStats.registrationsGrowthLabel}`
+            : `0.0% ${execStats.registrationsGrowthLabel}`;
+    const regGrowthColor = execStats.registrationsGrowth >= 0 ? "text-green-600" : "text-red-600";
+
     return (
         <div className="space-y-6 mb-6">
             {/* ROW 1: Original Program Overview Cards */}
             <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {/* CARD 1: Registered Mechanics / Total Members */}
                 <Card
-                    title="Registered Mechanics"
+                    title="Registered Mechanics / Workshops"
                     value={totalMembers}
                     percentage="+12.5%"
                     percentageColor="text-green-600"
@@ -129,24 +171,24 @@ const StatsRowOne: React.FC = () => {
                 {/* CARD 3: Total Points Issued */}
                 <Card
                     title="Total Points Issued"
-                    value={scannedPoints.totalPoints.toLocaleString()}
-                    percentage="+9.1%"
-                    percentageColor="text-green-600"
+                    value={scannedPoints.totalPointsScanned.toLocaleString()}
+                    percentage={pointsGrowthText}
+                    percentageColor={pointsGrowthColor}
                     icon={<FaCoins />}
                     iconColor='text-yellow-500'
                     onClick={() => navigate("/reports?report=qr")}
-                // extra={
-                //     <div className="flex gap-4 text-xs font-medium border-t border-gray-100 pt-2 mt-1 w-full justify-between">
-                //         <div>
-                //             <span className="text-gray-400">Scanned: </span>
-                //             <span className="text-gray-700 font-semibold">{scannedPoints.totalPointsScanned.toLocaleString()}</span>
-                //         </div>
-                //         <div>
-                //             <span className="text-gray-400">Bonus: </span>
-                //             <span className="text-gray-700 font-semibold">{scannedPoints.totalBonusPoints.toLocaleString()}</span>
-                //         </div>
-                //     </div>
-                // }
+                    extra={
+                        <div className="flex gap-4 text-xs font-medium border-t border-gray-100 pt-2 mt-1 w-full justify-between">
+                            <div>
+                                <span className="text-gray-400">Scanned: </span>
+                                <span className="text-gray-700 font-semibold">{scannedPoints.totalPointsScanned.toLocaleString()}</span>
+                            </div>
+                            <div>
+                                <span className="text-gray-400">Bonus: </span>
+                                <span className="text-gray-700 font-semibold">{scannedPoints.totalBonusPoints.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    }
                 />
 
                 {/* CARD 4: Points Redeemed */}
@@ -178,8 +220,8 @@ const StatsRowOne: React.FC = () => {
                 <Card
                     title="Monthly Registrations"
                     value={execLoading ? "..." : execStats.monthlyRegisteredUsers.toLocaleString()}
-                    percentage="This Month"
-                    percentageColor="text-blue-600"
+                    percentage={regGrowthText}
+                    percentageColor={regGrowthColor}
                     icon={<FaUserPlus />}
                     iconColor='text-blue-500'
                     onClick={() => navigate("/reports?report=registered-users")}
@@ -207,15 +249,15 @@ const StatsRowOne: React.FC = () => {
                     onClick={() => navigate("/reports?report=application-login")}
                 />
 
-                {/* CARD 9: Redemption Rate */}
+                {/* CARD 9: Welcome Bonus Points Issued */}
                 <Card
-                    title="Redemption Rate"
-                    value={execLoading ? "..." : `${execStats.redemptionRate}%`}
-                    percentage="Redeemed / Earned"
+                    title="Welcome Bonus Points Issued"
+                    value={execLoading ? "..." : (scannedPoints.totalBonusPoints || execStats.totalBonusPoints || 0).toLocaleString()}
+                    percentage="Bonus Points"
                     percentageColor="text-purple-600"
-                    icon={<FaPercent />}
+                    icon={<FaGift />}
                     iconColor='text-purple-500'
-                    onClick={() => navigate("/reports?report=redemptions")}
+                    onClick={() => navigate("/reports?report=application-login")}
                 />
             </div>
         </div>

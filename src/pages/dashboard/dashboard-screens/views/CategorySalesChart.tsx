@@ -18,27 +18,40 @@ const CategorySalesChart: React.FC<CategorySalesChartProps> = ({ filters }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        let isMounted = true;
         const fetchData = async () => {
             try {
                 setLoading(true);
                 const res = await getSalesByCategory(filters);
                 const apiData = res?.data?.data?.categories;
-                if (Array.isArray(apiData)) {
-                    setCategories(apiData);
+                if (isMounted) {
+                    if (Array.isArray(apiData)) {
+                        setCategories(apiData);
+                    } else {
+                        setCategories([]);
+                    }
                 }
             } catch (error) {
-                console.error("Error fetching category sales:", error);
+                console.error("Error fetching category scans:", error);
+                if (isMounted) setCategories([]);
             } finally {
-                setLoading(false);
+                if (isMounted) setLoading(false);
             }
         };
 
         fetchData();
+        return () => {
+            isMounted = false;
+        };
     }, [filters]);
 
     useEffect(() => {
-        if (!chartRef.current) return;
-        const chart = echarts.init(chartRef.current);
+        if (loading || !chartRef.current || categories.length === 0) return;
+
+        let chart = echarts.getInstanceByDom(chartRef.current);
+        if (!chart) {
+            chart = echarts.init(chartRef.current);
+        }
 
         const labels = categories.map((c) => c.category);
         const values = categories.map((c) => c.amount);
@@ -49,16 +62,16 @@ const CategorySalesChart: React.FC<CategorySalesChartProps> = ({ filters }) => {
                 axisPointer: { type: "shadow" },
                 formatter: (params: any) => {
                     const item = params[0];
-                    return `<div className="font-sans">
-                        <span className="font-semibold text-gray-800">${item.name}</span><br/>
-                        Sales: <span className="font-bold text-blue-600">${item.value}</span>
+                    return `<div class="font-sans">
+                        <span class="font-semibold text-gray-800">${item.name}</span><br/>
+                        Scans: <span class="font-bold text-blue-600">${item.value}</span>
                     </div>`;
                 },
             },
             grid: {
                 left: "3%",
                 right: "4%",
-                bottom: "10%",
+                bottom: "18%",
                 top: "12%",
                 containLabel: true,
             },
@@ -69,12 +82,17 @@ const CategorySalesChart: React.FC<CategorySalesChartProps> = ({ filters }) => {
                 axisTick: { show: false },
                 axisLabel: {
                     color: "#94A3B8",
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: 500,
+                    interval: 0,       // force show all labels
+                    rotate: 20,        // slight tilt to prevent overlap
+                    overflow: "truncate",
+                    width: 80,
                 },
             },
             yAxis: {
                 type: "value",
+                minInterval: 1,
                 splitLine: {
                     lineStyle: {
                         color: "#F1F5F9",
@@ -84,6 +102,7 @@ const CategorySalesChart: React.FC<CategorySalesChartProps> = ({ filters }) => {
                 axisLabel: {
                     color: "#94A3B8",
                     fontSize: 12,
+                    formatter: (val: number) => Math.round(val).toString(),
                 },
             },
             series: [
@@ -94,7 +113,6 @@ const CategorySalesChart: React.FC<CategorySalesChartProps> = ({ filters }) => {
                     itemStyle: {
                         borderRadius: [8, 8, 0, 0],
                         color: (params: any) => {
-                            // Colors: Blue for top bars, Coral Red for bottom 2
                             const total = values.length;
                             if (total > 3 && params.dataIndex >= total - 2) {
                                 return "#F04438"; // Coral Red
@@ -106,30 +124,29 @@ const CategorySalesChart: React.FC<CategorySalesChartProps> = ({ filters }) => {
             ],
         };
 
-        chart.setOption(option);
+        chart.setOption(option, true);
 
-        const resizeObserver = new ResizeObserver(() => chart.resize());
+        const resizeObserver = new ResizeObserver(() => chart?.resize());
         resizeObserver.observe(chartRef.current);
 
         return () => {
-            chart.dispose();
             resizeObserver.disconnect();
         };
-    }, [categories]);
+    }, [categories, loading]);
 
     return (
         <div className="bg-white shadow-md rounded-xl p-6 border border-gray-100 w-full flex flex-col justify-between">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">
-                Sales By Product Category
+                Scans By Product Category
             </h2>
 
             {loading ? (
                 <div className="h-72 flex items-center justify-center text-gray-400 text-sm">
-                    Loading category sales...
+                    Loading category scans...
                 </div>
             ) : categories.length === 0 ? (
                 <div className="h-72 flex items-center justify-center text-gray-400 text-sm">
-                    No sales data available by category
+                    No scans data available by category
                 </div>
             ) : (
                 <div ref={chartRef} className="w-full h-72" />

@@ -19,6 +19,7 @@ const KycReport = () => {
     const [emailId, setEmailId] = useState("");
     const [status, setStatus] = useState("");
     const [aadhaarNumber, setAadhaarNumber] = useState("");
+    const [zone, setZone] = useState("");
     const [kycDocStatus, setKycDocStatus] = useState(kycDocStatusParam);
 
     const [tableData, setTableData] = useState<any[]>([]);
@@ -66,7 +67,9 @@ const KycReport = () => {
         if (value === "kyc") return "KYC Document Upload Pending";
         if (value === "incomplete-registration") return "Address and Profile";
         if (value === "tds-consent") return "TDS Consent Pending";
-        if (value === "kyc-admin") return "Admin Approval Pending";
+        if (value === "kyc-admin") return "Approval Pending";
+        if (value === "kyc-regional-manager" || value === "Regional Manager Approval Pending" || value === "Regional Head Pending") return "Regional Head Pending";
+        if (value === "kyc-marketing-manager" || value === "Marketing Manager Approval Pending" || value === "Marketing Head Pending") return "Marketing Head Pending";
         return formatCell(value);
     };
 
@@ -99,6 +102,7 @@ const KycReport = () => {
         { key: "roleName", label: "Role Name" },
         { key: "mobileNumber", label: "Mobile Number" },
         { key: "workshopName", label: "Workshop Name" },
+        { key: "zone", label: "Zone" },
         // { key: "workshopAddress", label: "Workshop Address" },
         { key: "emailId", label: "Email ID" },
         { key: "status", label: "Status" },
@@ -205,6 +209,7 @@ const KycReport = () => {
             if (status) payload.status = status;
             if (aadhaarNumber) payload.aadhaarNumber = aadhaarNumber;
             if (kycDocStatus) payload.kycDocStatus = kycDocStatus;
+            if (zone) payload.zone = zone;
 
             const response = await getKycReport(payload);
 
@@ -257,7 +262,7 @@ const KycReport = () => {
         }, 500);
 
         return () => clearTimeout(timeout);
-    }, [page, fromDate, toDate, uniqueCode, name, roleName, mobileNumber, emailId, status, aadhaarNumber, kycDocStatus]);
+    }, [page, fromDate, toDate, uniqueCode, name, roleName, mobileNumber, emailId, status, aadhaarNumber, kycDocStatus, zone]);
 
     const onPageChange = (newPage: number) => {
         setPage(newPage);
@@ -277,6 +282,7 @@ const KycReport = () => {
             uniqueCode: formatCell(item.uniqueCode),
             name: formatCell(item.name),
             workshopName: formatCell(item.workshopName),
+            zone: formatCell(item.zone),
             roleName: formatCell(item.roleName),
             mobileNumber: formatCell(item.mobileNumber),
             emailId: formatCell(item.emailId),
@@ -387,7 +393,8 @@ const KycReport = () => {
                             <option value="digilocker">Digilocker pending</option>
                             <option value="kyc">KYC document upload pending</option>
                             <option value="incomplete-registration">Address and profile</option>
-                            <option value="kyc-admin">Admin Approval Pending</option>
+                            <option value="Regional Head Pending">Regional Head Pending</option>
+                            <option value="Marketing Head Pending">Marketing Head Pending</option>
                             <option value="tds-consent">TDS consent is pending</option>
                         </select>
                     </div>
@@ -413,6 +420,20 @@ const KycReport = () => {
                             <option value="Approved By Regional Head">Approved By Regional Head</option>
                             <option value="Pending">Pending</option>
                             <option value="Rejected">Rejected</option>
+                        </select>
+                    </div>
+                    <div className="w-[220px]">
+                        <label className="text-sm font-medium text-gray-600">Zone</label>
+                        <select
+                            className="w-full px-2 py-1.5 mt-1 border rounded-md text-sm"
+                            value={zone}
+                            onChange={(e) => setZone(e.target.value)}
+                        >
+                            <option value="">All</option>
+                            <option value="West">West</option>
+                            <option value="South">South</option>
+                            <option value="North">North</option>
+                            <option value="East">East</option>
                         </select>
                     </div>
                 </div>

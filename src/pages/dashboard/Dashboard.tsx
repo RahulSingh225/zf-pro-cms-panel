@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import TopBar from "../../layouts/top-bar";
 import GlobalFilters, { GlobalFilterValues } from "./dashboard-screens/GlobalFilters";
 import ExecutiveTab from "./dashboard-screens/views/ExecutiveTab";
+import TabErrorBoundary from "./dashboard-screens/views/TabErrorBoundary";
 import {
     ProgramPerformanceTab,
     SalesBusinessTab,
@@ -34,7 +35,7 @@ interface Tab {
 const TABS: Tab[] = [
     { id: "executive", label: "Executive" },
     { id: "program-performance", label: "Program Performance" },
-    { id: "sales-business", label: "Sales & Business" },
+    { id: "sales-business", label: "Scans" },
     { id: "member-360", label: "Member 360" },
     { id: "product-sku", label: "Product & SKU" },
     { id: "rewards", label: "Rewards" },
@@ -101,7 +102,7 @@ const Dashboard = () => {
                 <h1 className="text-xl font-bold text-gray-800 mb-3">Analytics Dashboards</h1>
 
                 {/* ── Global Filters ── */}
-                {/* <GlobalFilters filters={filters} onChange={setFilters} /> */}
+                {/* <GlobalFilters filters={filters} onChange={setFilters} /> � commented out, each chart has its own filter */}
 
                 {/* ── Tabs ── */}
                 <div className="flex items-center gap-1.5 mb-5 overflow-x-auto bg-gray-100 rounded-xl p-1 w-fit max-w-full">
@@ -128,7 +129,9 @@ const Dashboard = () => {
                 </div>
 
                 {/* ── Tab Content ── */}
-                <div>{renderTabContent()}</div>
+                <TabErrorBoundary key={activeTab} tabName={activeTab}>
+                    {renderTabContent()}
+                </TabErrorBoundary>
             </div>
         </div>
     );

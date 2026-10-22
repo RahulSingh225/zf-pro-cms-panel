@@ -14,10 +14,8 @@ const RecentTransactions: React.FC = () => {
   const fetchTransactions = async () => {
     try {
       setLoading(true);
-
-      const response = await getRecentTransactions(5); // fetch last 5
+      const response = await getRecentTransactions(5);
       setTransactions(response?.data?.data || []);
-
     } catch (error) {
       console.error("Error loading recent transactions:", error);
       setTransactions([]);
@@ -32,7 +30,6 @@ const RecentTransactions: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-gray-800">Recent Transactions</h2>
-
         <button
           className="text-blue-600 text-sm font-medium hover:underline"
           onClick={() => navigate("/mis-analytics", { state: { report: "qr" } })}
@@ -48,7 +45,7 @@ const RecentTransactions: React.FC = () => {
         <div>Workshop</div>
         <div>Type</div>
         <div>Points</div>
-        <div>Time</div>
+        <div>Timestamp</div>
       </div>
 
       {loading ? (
@@ -73,10 +70,11 @@ const RecentTransactions: React.FC = () => {
 
             <div>
               <span
-                className={`px-3 py-1 rounded-full text-xs font-medium ${txn.type === "scan"
-                  ? "bg-blue-50 text-blue-600"
-                  : "bg-orange-50 text-orange-600"
-                  }`}
+                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  txn.type === "scan"
+                    ? "bg-blue-50 text-blue-600"
+                    : "bg-orange-50 text-orange-600"
+                }`}
               >
                 {txn.type}
               </span>
@@ -86,11 +84,22 @@ const RecentTransactions: React.FC = () => {
               +{txn.points}
             </div>
 
-            <div className="text-gray-600">
-              {new Date(txn.createdAt).toLocaleTimeString("en-IN", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+            <div className="text-xs leading-tight">
+              <div className="font-medium text-gray-700">
+                {new Date(txn.createdAt).toLocaleTimeString("en-IN", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                  hour12: true,
+                })}
+              </div>
+              <div className="text-gray-400">
+                {new Date(txn.createdAt).toLocaleDateString("en-IN", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </div>
             </div>
           </div>
         ))

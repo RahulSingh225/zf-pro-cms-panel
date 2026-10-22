@@ -14,7 +14,7 @@ interface Props {
 const ExecutiveTab: React.FC<Props> = ({ filters }) => {
     return (
         <div>
-            <StatsRowOne />
+            <StatsRowOne filters={filters} />
             <StatsRowTwo />
             <StatsRowThree />
             <StatsRowFive />

@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { userLogout } from "../../services/ApiService";
 
 const MisAnalytics = () => {
-    const [activeTab, setActiveTab] = useState("MISDashboard");
+    const [activeTab, setActiveTab] = useState("Reports");
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -26,7 +26,6 @@ const MisAnalytics = () => {
     };
 
     const tabs = [
-        { id: "MISDashboard", label: "MIS Dashboard" },
         { id: "Reports", label: "Detailed Reports" },
     ];
 
@@ -35,7 +34,7 @@ const MisAnalytics = () => {
             <div className="bg-white">
                 <TopBar
                     title="MIS Reports & Analytics"
-                    description="Executive MIS dashboard, points metrics, and detailed system reports"
+                    description="Points metrics and detailed system reports"
                     logout={logout}
                 />
             </div>
@@ -61,7 +60,6 @@ const MisAnalytics = () => {
 
             {/* CONTENT SECTION */}
             <div className="mt-6 px-8">
-                {activeTab === "MISDashboard" && <MISDashboardView />}
                 {activeTab === "Reports" && <Reports />}
             </div>
         </div>

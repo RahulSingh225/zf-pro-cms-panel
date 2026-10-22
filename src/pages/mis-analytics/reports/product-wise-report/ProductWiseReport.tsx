@@ -16,6 +16,9 @@ const ProductWiseReport = () => {
     const [userType, setUserType] = useState("");
     const [district, setDistrict] = useState("");
     const [state, setState] = useState("");
+    const [city, setCity] = useState("");
+    const [zone, setZone] = useState("");
+    const [workshop, setWorkshop] = useState("");
 
     const [tableData, setTableData] = useState<any[]>([]);
     const [totalRows, setTotalRows] = useState(0);
@@ -31,6 +34,9 @@ const ProductWiseReport = () => {
     const columns: Column[] = [
         { key: "userId", label: "User ID" },
         { key: "memberName", label: "Member Name" },
+        { key: "workshop", label: "Workshop" },
+        { key: "zone", label: "Zone" },
+        { key: "city", label: "City" },
         { key: "productCode", label: "Product Code" },
         { key: "productCategory", label: "Product Category" },
         { key: "productType", label: "Product Type" },
@@ -72,6 +78,9 @@ const ProductWiseReport = () => {
             if (userType) payload.userType = userType;
             if (district) payload.district = district;
             if (state) payload.state = state;
+            if (city) payload.city = city;
+            if (zone) payload.zone = zone;
+            if (workshop) payload.workshop = workshop;
 
             const response = await getProductWiseReport(payload);
 
@@ -136,6 +145,9 @@ const ProductWiseReport = () => {
         const exportData = data.map((item: any) => ({
             userId: formatCell(item.userId),
             memberName: formatCell(item.memberName),
+            workshop: formatCell(item.workshop ?? item.workshopName),
+            zone: formatCell(item.zone),
+            city: formatCell(item.city),
             productCode: formatCell(item.productCode),
             productCategory: formatCell(item.productCategory),
             productType: formatCell(item.productType),

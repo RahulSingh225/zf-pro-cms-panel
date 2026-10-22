@@ -3,7 +3,7 @@ import { GlobalFilterValues } from "../../dashboard-screens/GlobalFilters";
 import CategorySalesChart from "./CategorySalesChart";
 import ZoneSalesChart from "./ZoneSalesChart";
 import { getZonePerformance } from "../../../../services/ApiService";
-import { FaGlobeAsia, FaShoppingCart, FaUsers } from "react-icons/fa";
+import { FaGlobeAsia } from "react-icons/fa";
 
 interface Props {
     filters: GlobalFilterValues;
@@ -11,8 +11,11 @@ interface Props {
 
 interface ZonePerfItem {
     zone: string;
-    sales: number;
-    members: number;
+    scans?: number;
+    sales?: number;
+    members?: number;
+    registrations?: number;
+    active?: number;
 }
 
 const ZonePerformanceCard: React.FC = () => {
@@ -28,8 +31,9 @@ const ZonePerformanceCard: React.FC = () => {
             .finally(() => setLoading(false));
     }, []);
 
-    const totalSales = data.reduce((acc, item) => acc + item.sales, 0);
-    const totalMembers = data.reduce((acc, item) => acc + item.members, 0);
+    const totalScans = data.reduce((acc, item) => acc + (item.scans ?? item.sales ?? 0), 0);
+    const totalMembers = data.reduce((acc, item) => acc + (item.registrations ?? item.members ?? 0), 0);
+    const totalActive = data.reduce((acc, item) => acc + (item.active ?? 0), 0);
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -39,11 +43,12 @@ const ZonePerformanceCard: React.FC = () => {
                         <FaGlobeAsia className="text-blue-500" /> Zone Performance
                     </h2>
                     <p className="text-xs text-gray-400 mt-0.5">
-                        Zone-wise sales (successful scan transactions) &amp; member density
+                        Zone-wise scans (successful scan transactions) &amp; member density
                     </p>
                 </div>
                 <div className="flex items-center gap-4 text-xs font-semibold text-gray-500 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
-                    <div>Total Sales: <span className="text-blue-600 font-bold">{totalSales.toLocaleString()}</span></div>
+                    <div>Total Scans: <span className="text-blue-600 font-bold">{totalScans.toLocaleString()}</span></div>
+                    <div>Active: <span className="text-indigo-600 font-bold">{totalActive.toLocaleString()}</span></div>
                     <div>Total Members: <span className="text-green-600 font-bold">{totalMembers.toLocaleString()}</span></div>
                 </div>
             </div>
@@ -58,14 +63,18 @@ const ZonePerformanceCard: React.FC = () => {
                         <thead>
                             <tr className="border-b border-gray-100 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                                 <th className="pb-3 pl-2">Zone</th>
-                                <th className="pb-3 text-right">Sales (Scans)</th>
+                                <th className="pb-3 text-right">Scans</th>
+                                <th className="pb-3 text-right">Active</th>
                                 <th className="pb-3 text-right">Members</th>
                                 <th className="pb-3 pr-2 text-right">Share</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                             {data.map((row) => {
-                                const share = totalSales > 0 ? Math.round((row.sales / totalSales) * 100) : 0;
+                                const rowScans = row.scans ?? row.sales ?? 0;
+                                const rowMembers = row.registrations ?? row.members ?? 0;
+                                const rowActive = row.active ?? 0;
+                                const share = totalScans > 0 ? Math.round((rowScans / totalScans) * 100) : 0;
                                 return (
                                     <tr key={row.zone} className="hover:bg-gray-50/60 transition-colors">
                                         <td className="py-3 pl-2 font-medium text-gray-800 flex items-center gap-2">
@@ -73,10 +82,13 @@ const ZonePerformanceCard: React.FC = () => {
                                             {row.zone} Zone
                                         </td>
                                         <td className="py-3 text-right font-semibold text-gray-700">
-                                            {row.sales.toLocaleString()}
+                                            {rowScans.toLocaleString()}
                                         </td>
                                         <td className="py-3 text-right font-semibold text-gray-700">
-                                            {row.members.toLocaleString()}
+                                            {rowActive.toLocaleString()}
+                                        </td>
+                                        <td className="py-3 text-right font-semibold text-gray-700">
+                                            {rowMembers.toLocaleString()}
                                         </td>
                                         <td className="py-3 pr-2 text-right">
                                             <div className="flex items-center justify-end gap-2">

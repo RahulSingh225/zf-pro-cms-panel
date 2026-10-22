@@ -20,7 +20,7 @@ const AppContent = () => {
     <LoadingProvider>
       <AuthProvider>
         <Loader />
-        <Router>
+        <Router basename="/zf-cms">
           <AppRoutes />
           <ToastContainer position="top-center" autoClose={3000} />
         </Router>

@@ -240,10 +240,10 @@ export const getTopPerformers = async (count: number) => {
 };
 
 // Get top mechanics
-export const getTopMechanics = async (count: number = 5) => {
+export const getTopMechanics = async (count?: number) => {
     return api
         .get("masters/users/top-mechanics", {
-            params: { count }
+            params: count !== undefined ? { count } : { count: 0 }
         })
         .then((response) => response);
 };
@@ -288,9 +288,9 @@ export const getScansByProduct = async (count: number = 5) => {
 };
 
 // Get category share (pie chart)
-export const getCategoryShare = async () => {
+export const getCategoryShare = async (params?: { dateFrom?: string; dateTo?: string }) => {
     return api
-        .get("masters/scans/category-share")
+        .get("masters/scans/category-share", { params })
         .then((response) => response);
 };
 
@@ -330,9 +330,9 @@ export const getMember360List = async (search?: string, page: number = 1, limit:
 };
 
 // Get Member 360 detail
-export const getMember360Detail = async (userId: number) => {
+export const getMember360Detail = async (userId: number, page: number = 1, limit: number = 5) => {
     return api
-        .get(`masters/members/360-detail/${userId}`)
+        .get(`masters/members/360-detail/${userId}`, { params: { page, limit } })
         .then((response) => response);
 };
 
