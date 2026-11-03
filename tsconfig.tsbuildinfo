@@ -56,6 +56,7 @@
         "./src/pages/dashboard/dashboard-screens/views/salesbusinesstab.tsx",
         "./src/pages/dashboard/dashboard-screens/views/scansbyproductchart.tsx",
         "./src/pages/dashboard/dashboard-screens/views/statememberdensitychart.tsx",
+        "./src/pages/dashboard/dashboard-screens/views/taberrorboundary.tsx",
         "./src/pages/dashboard/dashboard-screens/views/zonesaleschart.tsx",
         "./src/pages/data-export/dataexport.tsx",
         "./src/pages/delete-account/admindeleteaccountpage.tsx",
