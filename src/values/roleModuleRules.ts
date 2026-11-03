@@ -1,4 +1,4 @@
-// RBAC Configuration - Role-based module access
+﻿// RBAC Configuration - Role-based module access
 
 // Map module IDs to their routes
 export const moduleRoutes: Record<string, string[]> = {
@@ -35,11 +35,11 @@ export const roleModuleAccess: Record<number, string[]> = {
   1: [],// mechanic
   2: ["dashboard", "mis-analytics", "data-export", "process", "members"], // regional_manager
   3: ["dashboard", "communication", "mis-analytics", "data-export", "tickets"], // call_centre_executive
-  4: ["dashboard", "mis-analytics", "data-export", "process", "members", "qr-management", "communication", "manage-workshop"], // marketing_manager or client admin are same
+  4: ["dashboard", "mis-analytics", "data-export", "process", "members", "qr-management", "communication", "manage-workshop"], // marketing_manager
   5: allModulesExceptServiceConfig, // operator
   6: allModulesExceptServiceConfig, // viewer
-  7: ["dashboard", "qr-management"], // qr_admin
-  8: allModules, // evolve_admin — only role that can see Service Config
+  7: ["dashboard", "members", "mis-analytics", "data-export"], // network_team -- KYC approval + read-only analytics
+  8: allModules, // evolve_admin -- only role that can see Service Config
   9: ["dashboard", "qr-management", "communication", "mis-analytics", "data-export", "process", "members", "manage-workshop"], // client_admin
 };
 

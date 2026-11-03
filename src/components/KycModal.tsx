@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+﻿import React, { useState, useEffect, useCallback } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -7,7 +7,7 @@ import { updateKycRecords, getUserKycsByUserId } from "../services/ApiService";
 import { UserDetails } from "../types/User";
 import { ROLES } from "../values/constants";
 
-type KYCStatus = "Pending" | "Approved" | "Rejected" | "Completed";
+type KYCStatus = "Pending" | "Approved" | "Network-Approved" | "Rejected" | "Completed";
 
 interface KycDocument {
     detailId: number;
@@ -144,7 +144,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, mechanicName, mech
 
         return (
             <span className={`px-3 py-1 rounded-md text-xs font-medium ${statusStyles[status]}`}>
-                {status == 'Completed' ? 'Approved' : status}
+                {status === 'Completed' ? 'Approved' : status === 'Network-Approved' ? 'NT Approved' : status}
             </span>
         );
     };
@@ -245,7 +245,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, mechanicName, mech
                                         </td>
                                         <td className="px-6 py-4">
                                             {doc.kycType === "user-profile" || doc.kycType === "profile-picture" ? (
-                                                <span className="text-sm text-gray-400 font-medium">—</span>
+                                                <span className="text-sm text-gray-400 font-medium">â€”</span>
                                             ) : (
                                                 <div className="space-y-1">
                                                     <input
@@ -254,19 +254,32 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, mechanicName, mech
                                                         value={comments[doc.detailId] || doc.comment || ""}
                                                         onChange={(e) => handleCommentChange(doc.detailId, e.target.value)}
                                                         className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                        disabled={(loggedUser?.userRoleId == ROLES.REGION_MANAGER && doc.docStatus !== "Pending") || (loggedUser?.userRoleId == ROLES.MARKETING_MANAGER && doc.docStatus !== "Approved")}
+                                                        disabled={
+                                                        (loggedUser?.userRoleId == ROLES.REGION_MANAGER && doc.docStatus !== "Pending") ||
+                                                        (loggedUser?.userRoleId == ROLES.NETWORK_TEAM && doc.docStatus !== "Approved") ||
+                                                        (loggedUser?.userRoleId == ROLES.MARKETING_MANAGER && doc.docStatus !== "Network-Approved")
+                                                    }
                                                     />
                                                 </div>
                                             )}
                                         </td>
                                         <td className="px-6 py-4">
                                             {doc.kycType === "user-profile" || doc.kycType === "profile-picture" ? (
-                                                <span className="text-sm text-gray-400 font-medium">—</span>
-                                            ) : (loggedUser?.userRoleId == ROLES.REGION_MANAGER && doc.docStatus === "Pending") || (loggedUser?.userRoleId == ROLES.MARKETING_MANAGER && doc.docStatus === "Approved") ? (
+                                                <span className="text-sm text-gray-400 font-medium">â€”</span>
+                                            ) : (loggedUser?.userRoleId == ROLES.REGION_MANAGER && doc.docStatus === "Pending") ||
+                                            (loggedUser?.userRoleId == ROLES.NETWORK_TEAM && doc.docStatus === "Approved") ||
+                                            (loggedUser?.userRoleId == ROLES.MARKETING_MANAGER && doc.docStatus === "Network-Approved") ? (
                                                 <div className="flex gap-2">
                                                     <button
                                                         type="button"
-                                                        onClick={() => handleStatusUpdate(doc.detailId, loggedUser?.userRoleId == ROLES.MARKETING_MANAGER ? "Completed" : "Approved")}
+                                                        onClick={() => {
+                                                            const status = loggedUser?.userRoleId == ROLES.MARKETING_MANAGER
+                                                                ? "Completed"
+                                                                : loggedUser?.userRoleId == ROLES.NETWORK_TEAM
+                                                                ? "Approved"  // backend maps Approved -> Network-Approved for NT
+                                                                : "Approved";
+                                                            handleStatusUpdate(doc.detailId, status as any);
+                                                        }}
                                                         disabled={loading[doc.detailId]}
                                                         className="px-4 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >
@@ -283,7 +296,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, mechanicName, mech
                                                 </div>
                                             ) : (
                                                 <span className="text-sm text-gray-500 italic">
-                                                    {(doc.docStatus === "Approved" || doc.docStatus == "Completed") ? "Approved" : "Rejected"}
+                                                    {doc.docStatus === "Completed" ? "MM Approved" : doc.docStatus === "Network-Approved" ? "NT Approved" : doc.docStatus === "Approved" ? "RM Approved" : "Rejected"}
                                                 </span>
                                             )}
                                         </td>
@@ -345,15 +358,26 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, mechanicName, mech
                                                 value={comments[prefDoc.detailId] || prefDoc.comment || ""}
                                                 onChange={(e) => handleCommentChange(prefDoc.detailId, e.target.value)}
                                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                disabled={(loggedUser?.userRoleId == ROLES.REGION_MANAGER && prefDoc.docStatus !== "Pending") || (loggedUser?.userRoleId == ROLES.MARKETING_MANAGER && prefDoc.docStatus !== "Approved")}
+                                                disabled={
+                                                (loggedUser?.userRoleId == ROLES.REGION_MANAGER && prefDoc.docStatus !== "Pending") ||
+                                                (loggedUser?.userRoleId == ROLES.NETWORK_TEAM && prefDoc.docStatus !== "Approved") ||
+                                                (loggedUser?.userRoleId == ROLES.MARKETING_MANAGER && prefDoc.docStatus !== "Network-Approved")
+                                            }
                                             />
                                         </div>
                                         <div className="flex gap-2 justify-end">
-                                            {(loggedUser?.userRoleId == ROLES.REGION_MANAGER && prefDoc.docStatus === "Pending") || (loggedUser?.userRoleId == ROLES.MARKETING_MANAGER && prefDoc.docStatus === "Approved") ? (
+                                            {(loggedUser?.userRoleId == ROLES.REGION_MANAGER && prefDoc.docStatus === "Pending") ||
+                                            (loggedUser?.userRoleId == ROLES.NETWORK_TEAM && prefDoc.docStatus === "Approved") ||
+                                            (loggedUser?.userRoleId == ROLES.MARKETING_MANAGER && prefDoc.docStatus === "Network-Approved") ? (
                                                 <>
                                                     <button
                                                         type="button"
-                                                        onClick={() => handleStatusUpdate(prefDoc.detailId, loggedUser?.userRoleId == ROLES.MARKETING_MANAGER ? "Completed" : "Approved")}
+                                                        onClick={() => {
+                                                            const status = loggedUser?.userRoleId == ROLES.MARKETING_MANAGER
+                                                                ? "Completed"
+                                                                : "Approved";
+                                                            handleStatusUpdate(prefDoc.detailId, status as any);
+                                                        }}
                                                         disabled={loading[prefDoc.detailId]}
                                                         className="px-4 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >
