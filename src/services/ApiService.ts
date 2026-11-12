@@ -1132,3 +1132,20 @@ export const deletePriceList = async (id: number) => {
 };
 
 
+
+
+// ─── Product Catalogue APIs ───────────────────────────────────────────────────
+
+export const uploadProductCatalogue = async (
+    formData: FormData,
+    params: { dryRun: boolean; mode: string }
+) => {
+    return api.post('product-catalogue/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        params,
+    }).then((res) => res);
+};
+
+export const getProductCatalogueCategories = async () => {
+    return api.get('product-catalogue/categories').then((res) => res);
+};

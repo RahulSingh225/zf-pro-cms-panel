@@ -29,6 +29,7 @@ import DeleteAccount from "../pages/delete-account/DeleteAccount";
 import AdminDeleteAccountPage from "../pages/delete-account/AdminDeleteAccountPage";
 import ServiceConfig from "../pages/service-config/ServiceConfig";
 import PriceListManagement from "../pages/price-list/PriceListManagement";
+import ProductCatalogueUpload from "../pages/product-catalogue/ProductCatalogueUpload";
 
 import { useAppSelector } from "../redux/hooks";
 import { getAllowedRoutes } from "../values/roleModuleRules";
@@ -60,6 +61,7 @@ export const appRoutes = [
     { path: "/delete-account", element: <DeleteAccount />, isPublic: true },
     { path: "/service-config", element: <PrivateRoute element={<ServiceConfig />} />, moduleId: "service-config" },
     { path: "/price-list", element: <PrivateRoute element={<PriceListManagement />} />, moduleId: "price-list" },
+    { path: "/product-catalogue", element: <PrivateRoute element={<ProductCatalogueUpload />} />, moduleId: "product-catalogue" },
 
     { path: "*", element: <NotFound />, isPublic: true },
 ];

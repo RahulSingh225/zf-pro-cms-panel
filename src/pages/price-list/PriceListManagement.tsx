@@ -407,7 +407,7 @@ const PriceListManagement: React.FC = () => {
                             ✓
                         </div>
                     </div>
-                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex items-center justify-between">
+                    {/* <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex items-center justify-between">
                         <div>
                             <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Access Scope</span>
                             <p className="text-sm font-semibold text-gray-800 mt-1">Evolve Admin Only</p>
@@ -415,178 +415,178 @@ const PriceListManagement: React.FC = () => {
                         <div className="w-10 h-10 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center text-xs font-bold">
                             ROLE 8
                         </div>
-                    </div>
+                    </div> */}
                 </div>
 
-                {/* Search & Actions Bar */}
-                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
-                    <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 w-full sm:w-96">
-                        <TextField
-                            size="small"
-                            placeholder="Search by title, description or file..."
-                            value={searchInput}
-                            onChange={(e) => setSearchInput(e.target.value)}
-                            fullWidth
-                            InputProps={{
-                                startAdornment: <SearchIcon fontSize="small" className="text-gray-400 mr-1" />
-                            }}
-                        />
-                        <Button type="submit" variant="outlined" size="small" className="normal-case">
-                            Search
-                        </Button>
-                        {search && (
-                            <Button type="button" variant="text" size="small" onClick={handleClearSearch} className="normal-case text-gray-500">
-                                Clear
-                            </Button>
-                        )}
-                    </form>
-
-                    <Button
+            {/* Search & Actions Bar */}
+            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+                <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 w-full sm:w-96">
+                    <TextField
                         size="small"
-                        startIcon={<RefreshIcon />}
-                        onClick={() => fetchPriceLists()}
-                        className="text-gray-600 normal-case"
-                    >
-                        Refresh
-                    </Button>
-                </div>
-
-                {/* Table */}
-                <div className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
-                    <CustomTable
-                        columns={columns}
-                        data={priceLists}
-                        loading={loading}
-                        pageSize={pageSize}
-                        totalRows={totalRows}
-                        currentPage={page}
-                        onPageChange={(p) => setPage(p)}
+                        placeholder="Search by title, description or file..."
+                        value={searchInput}
+                        onChange={(e) => setSearchInput(e.target.value)}
+                        fullWidth
+                        InputProps={{
+                            startAdornment: <SearchIcon fontSize="small" className="text-gray-400 mr-1" />
+                        }}
                     />
-                </div>
+                    <Button type="submit" variant="outlined" size="small" className="normal-case">
+                        Search
+                    </Button>
+                    {search && (
+                        <Button type="button" variant="text" size="small" onClick={handleClearSearch} className="normal-case text-gray-500">
+                            Clear
+                        </Button>
+                    )}
+                </form>
+
+                <Button
+                    size="small"
+                    startIcon={<RefreshIcon />}
+                    onClick={() => fetchPriceLists()}
+                    className="text-gray-600 normal-case"
+                >
+                    Refresh
+                </Button>
             </div>
 
-            {/* Add / Edit Dialog */}
-            <Dialog open={openModal} onClose={() => !submitting && setOpenModal(false)} maxWidth="sm" fullWidth>
-                <form onSubmit={handleSubmit}>
-                    <DialogTitle className="flex items-center justify-between border-b border-gray-100 pb-3">
-                        <span className="font-bold text-gray-900 text-lg">
-                            {isEditMode ? "Edit Price List" : "Add New Price List PDF"}
-                        </span>
-                        <IconButton size="small" onClick={() => setOpenModal(false)} disabled={submitting}>
-                            <CloseIcon fontSize="small" />
-                        </IconButton>
-                    </DialogTitle>
-
-                    <DialogContent className="space-y-4 pt-4">
-                        <div>
-                            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                                Document Title *
-                            </label>
-                            <TextField
-                                size="small"
-                                fullWidth
-                                required
-                                placeholder="e.g. TRW Braking Systems Price List 2026"
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                                Description
-                            </label>
-                            <TextField
-                                size="small"
-                                fullWidth
-                                multiline
-                                rows={3}
-                                placeholder="Detailed summary of the price list catalogue, brands, products..."
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                                PDF Document {isEditMode ? "(Optional: select new PDF to replace)" : "*"}
-                            </label>
-
-                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 transition bg-slate-50">
-                                <CloudUploadIcon className="text-gray-400 text-3xl mb-1" />
-                                <div className="text-sm font-medium text-gray-700">
-                                    {file ? (
-                                        <span className="text-blue-600 font-semibold">{file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
-                                    ) : (
-                                        <span>Click to select PDF or drag and drop</span>
-                                    )}
-                                </div>
-                                <p className="text-xs text-gray-400 mt-1">PDF files up to 50MB (stored in S3: price-list-pdfs/)</p>
-                                <input
-                                    type="file"
-                                    accept=".pdf,application/pdf"
-                                    onChange={handleFileChange}
-                                    className="hidden"
-                                    id="pricelist-pdf-upload"
-                                />
-                                <label
-                                    htmlFor="pricelist-pdf-upload"
-                                    className="mt-3 inline-block px-3 py-1.5 bg-white border border-gray-300 rounded-md text-xs font-semibold text-gray-700 cursor-pointer hover:bg-gray-50 shadow-2xs"
-                                >
-                                    Browse Files
-                                </label>
-                            </div>
-
-                            {fileError && (
-                                <p className="text-xs text-red-600 mt-1 font-medium">{fileError}</p>
-                            )}
-                            {isEditMode && selectedItem && !file && (
-                                <p className="text-xs text-gray-500 mt-1">
-                                    Current file: <span className="font-mono text-gray-700">{selectedItem.pricelistFile}</span>
-                                </p>
-                            )}
-                        </div>
-
-                        <div>
-                            <FormControlLabel
-                                control={
-                                    <Switch
-                                        checked={isActive}
-                                        onChange={(e) => setIsActive(e.target.checked)}
-                                        color="success"
-                                    />
-                                }
-                                label={
-                                    <span className="text-sm font-medium text-gray-800">
-                                        Make Active (Visible in ZF Mobile App)
-                                    </span>
-                                }
-                            />
-                        </div>
-                    </DialogContent>
-
-                    <DialogActions className="border-t border-gray-100 p-4">
-                        <Button
-                            variant="outlined"
-                            onClick={() => setOpenModal(false)}
-                            disabled={submitting}
-                            className="normal-case text-gray-600"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            disabled={submitting}
-                            className="bg-blue-700 hover:bg-blue-800 text-white normal-case shadow-none"
-                            startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : null}
-                        >
-                            {submitting ? "Saving..." : isEditMode ? "Update Price List" : "Upload & Save"}
-                        </Button>
-                    </DialogActions>
-                </form>
-            </Dialog>
+            {/* Table */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
+                <CustomTable
+                    columns={columns}
+                    data={priceLists}
+                    loading={loading}
+                    pageSize={pageSize}
+                    totalRows={totalRows}
+                    currentPage={page}
+                    onPageChange={(p) => setPage(p)}
+                />
+            </div>
         </div>
+
+            {/* Add / Edit Dialog */ }
+    <Dialog open={openModal} onClose={() => !submitting && setOpenModal(false)} maxWidth="sm" fullWidth>
+        <form onSubmit={handleSubmit}>
+            <DialogTitle className="flex items-center justify-between border-b border-gray-100 pb-3">
+                <span className="font-bold text-gray-900 text-lg">
+                    {isEditMode ? "Edit Price List" : "Add New Price List PDF"}
+                </span>
+                <IconButton size="small" onClick={() => setOpenModal(false)} disabled={submitting}>
+                    <CloseIcon fontSize="small" />
+                </IconButton>
+            </DialogTitle>
+
+            <DialogContent className="space-y-4 pt-4">
+                <div>
+                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                        Document Title *
+                    </label>
+                    <TextField
+                        size="small"
+                        fullWidth
+                        required
+                        placeholder="e.g. TRW Braking Systems Price List 2026"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                        Description
+                    </label>
+                    <TextField
+                        size="small"
+                        fullWidth
+                        multiline
+                        rows={3}
+                        placeholder="Detailed summary of the price list catalogue, brands, products..."
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                        PDF Document {isEditMode ? "(Optional: select new PDF to replace)" : "*"}
+                    </label>
+
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 transition bg-slate-50">
+                        <CloudUploadIcon className="text-gray-400 text-3xl mb-1" />
+                        <div className="text-sm font-medium text-gray-700">
+                            {file ? (
+                                <span className="text-blue-600 font-semibold">{file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                            ) : (
+                                <span>Click to select PDF or drag and drop</span>
+                            )}
+                        </div>
+                        <p className="text-xs text-gray-400 mt-1">PDF files up to 50MB (stored in S3: price-list-pdfs/)</p>
+                        <input
+                            type="file"
+                            accept=".pdf,application/pdf"
+                            onChange={handleFileChange}
+                            className="hidden"
+                            id="pricelist-pdf-upload"
+                        />
+                        <label
+                            htmlFor="pricelist-pdf-upload"
+                            className="mt-3 inline-block px-3 py-1.5 bg-white border border-gray-300 rounded-md text-xs font-semibold text-gray-700 cursor-pointer hover:bg-gray-50 shadow-2xs"
+                        >
+                            Browse Files
+                        </label>
+                    </div>
+
+                    {fileError && (
+                        <p className="text-xs text-red-600 mt-1 font-medium">{fileError}</p>
+                    )}
+                    {isEditMode && selectedItem && !file && (
+                        <p className="text-xs text-gray-500 mt-1">
+                            Current file: <span className="font-mono text-gray-700">{selectedItem.pricelistFile}</span>
+                        </p>
+                    )}
+                </div>
+
+                <div>
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                checked={isActive}
+                                onChange={(e) => setIsActive(e.target.checked)}
+                                color="success"
+                            />
+                        }
+                        label={
+                            <span className="text-sm font-medium text-gray-800">
+                                Make Active (Visible in ZF Mobile App)
+                            </span>
+                        }
+                    />
+                </div>
+            </DialogContent>
+
+            <DialogActions className="border-t border-gray-100 p-4">
+                <Button
+                    variant="outlined"
+                    onClick={() => setOpenModal(false)}
+                    disabled={submitting}
+                    className="normal-case text-gray-600"
+                >
+                    Cancel
+                </Button>
+                <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={submitting}
+                    className="bg-blue-700 hover:bg-blue-800 text-white normal-case shadow-none"
+                    startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : null}
+                >
+                    {submitting ? "Saving..." : isEditMode ? "Update Price List" : "Upload & Save"}
+                </Button>
+            </DialogActions>
+        </form>
+    </Dialog>
+        </div >
     );
 };
 
