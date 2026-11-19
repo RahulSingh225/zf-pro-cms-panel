@@ -19,22 +19,24 @@ import {
     getAdminOtpReport,
 } from "../../services/ApiService";
 import {
-    ApplicationLoginReportKeys,
-    RegisteredUsersReportKeys,
-    QRTransactionReportKeys,
-    RedemptionReportKeys,
-    ReferralsReportKeys,
-    OtpReportKeys,
-    BankDetailsReportKeys,
-    KycReportKeys,
-    ProductWiseReportKeys,
-    CategoryReportKeys,
-    ErrorTransactionReportKeys,
-    BlockedMemberReportKeys,
-    BlockedMemberScanReportKeys,
-    AnomalyTransactionsReportKeys,
-    ShockReplacementReportKeys,
-} from "../../utils/ExportKeyMappings";
+    ReportName,
+    buildExportSheetRows,
+    mapApplicationLoginRow,
+    mapRegisteredUserRow,
+    mapQrTransactionRow,
+    mapRedemptionRow,
+    mapReferralRow,
+    mapOtpRow,
+    mapBankDetailsRow,
+    mapKycRow,
+    mapProductWiseRow,
+    mapCategoryRow,
+    mapErrorTransactionRow,
+    mapBlockedMemberRow,
+    mapBlockedMemberScanRow,
+    mapAnomalyTransactionRow,
+    mapShockReplacementRow,
+} from "../../utils/reportExport";
 
 // Icons from react-icons
 import {
@@ -59,11 +61,16 @@ import {
 
 interface ExportCardConfig {
     id: string;
-    title: string;
+    // Same as the MIS & Analytics reportName — used for the card title, file name and sheet name
+    title: ReportName;
     subtitle: string;
     icon: React.ReactNode;
-    fetcher: (filters: any) => Promise<{ data: any[]; mappings: Record<string, string> }>;
+    // Returns rows already mapped exactly like the MIS & Analytics export
+    fetcher: (filters: any) => Promise<any[]>;
 }
+
+// Max rows fetched per report (MIS & Analytics uses the table's total count)
+const EXPORT_LIMIT = 10000;
 
 export const DataExport: React.FC = () => {
     // Filter State
@@ -100,25 +107,7 @@ export const DataExport: React.FC = () => {
         setStatus("");
     };
 
-    // Format row values
-    const formatCell = (val: any) => {
-        if (val === null || val === undefined || val === "") return "-";
-        if (typeof val === "boolean") return val ? "Yes" : "No";
-        return val;
-    };
-
-    const formatDate = (val: any) => {
-        if (!val) return "-";
-        try {
-            const d = new Date(val);
-            if (isNaN(d.getTime())) return String(val);
-            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
-        } catch {
-            return String(val);
-        }
-    };
-
-    // Exactly 15 Report Cards matching MIS & Analytics Report Categories
+    // Report cards — names, API payloads and row mapping match MIS & Analytics
     const exportCards: ExportCardConfig[] = [
         {
             id: "application-login",
@@ -126,9 +115,8 @@ export const DataExport: React.FC = () => {
             subtitle: "User login activity, dates & devices",
             icon: <FiUserCheck />,
             fetcher: async (params) => {
-                const res = await getApplicationLoginReport({ limit: 10000, ...params });
-                const list = res?.data?.data?.reportList || [];
-                return { data: list, mappings: ApplicationLoginReportKeys };
+                const res = await getApplicationLoginReport({ skip: 0, limit: EXPORT_LIMIT, ...params });
+                return (res?.data?.data?.reportList || []).map(mapApplicationLoginRow);
             },
         },
         {
@@ -137,9 +125,8 @@ export const DataExport: React.FC = () => {
             subtitle: "Registered user profile details & status",
             icon: <FiUsers />,
             fetcher: async (params) => {
-                const res = await getregisteredUsersReport({ limit: 10000, ...params });
-                const list = res?.data?.data?.reportList || [];
-                return { data: list, mappings: RegisteredUsersReportKeys };
+                const res = await getregisteredUsersReport({ skip: 0, limit: EXPORT_LIMIT, ...params });
+                return (res?.data?.data?.reportList || []).map(mapRegisteredUserRow);
             },
         },
         {
@@ -148,20 +135,18 @@ export const DataExport: React.FC = () => {
             subtitle: "QR scan transactions & point allocations",
             icon: <FiGrid />,
             fetcher: async (params) => {
-                const res = await getQrTransactionReport({ limit: 10000, status: "Success", ...params });
-                const list = res?.data?.data?.reportList || [];
-                return { data: list, mappings: QRTransactionReportKeys };
+                const res = await getQrTransactionReport({ skip: 0, limit: EXPORT_LIMIT, status: "Success", ...params });
+                return (res?.data?.data?.reportList || []).map(mapQrTransactionRow);
             },
         },
         {
             id: "redemptions",
-            title: "Redemptions",
+            title: "Redemption Report",
             subtitle: "Reward redemption requests & status",
             icon: <FiRepeat />,
             fetcher: async (params) => {
-                const res = await getRedemptionHistory({ limit: 10000, ...params });
-                const list = res?.data?.reportList || res?.data?.data?.reportList || [];
-                return { data: list, mappings: RedemptionReportKeys };
+                const res = await getRedemptionHistory({ skip: 0, limit: EXPORT_LIMIT, ...params });
+                return (res?.data?.reportList || res?.data?.data?.reportList || []).map(mapRedemptionRow);
             },
         },
         {
@@ -170,9 +155,8 @@ export const DataExport: React.FC = () => {
             subtitle: "User referral invites & points earned",
             icon: <FiShare2 />,
             fetcher: async (params) => {
-                const res = await getAdminreferralReport({ limit: 10000, ...params });
-                const list = res?.data?.data?.reportList || [];
-                return { data: list, mappings: ReferralsReportKeys };
+                const res = await getAdminreferralReport({ skip: 0, limit: EXPORT_LIMIT, ...params });
+                return (res?.data?.data?.reportList || []).map(mapReferralRow);
             },
         },
         {
@@ -181,10 +165,10 @@ export const DataExport: React.FC = () => {
             subtitle: "OTP requests & verification logs",
             icon: <FiKey />,
             fetcher: async (params) => {
-                const res = await getAdminOtpReport({ page: 1, limit: 10000, ...params });
+                const res = await getAdminOtpReport({ page: 1, limit: EXPORT_LIMIT, ...params });
                 // OTP API returns a flat array at res.data.data (not .reportList)
                 const raw = Array.isArray(res?.data?.data) ? res.data.data : [];
-                return { data: raw, mappings: OtpReportKeys };
+                return raw.map(mapOtpRow);
             },
         },
         {
@@ -193,9 +177,8 @@ export const DataExport: React.FC = () => {
             subtitle: "Bank account, IFSC & UPI details",
             icon: <FiCreditCard />,
             fetcher: async (params) => {
-                const res = await getBankDetailsReport({ limit: 10000, ...params });
-                const list = res?.data?.data?.reportList || [];
-                return { data: list, mappings: BankDetailsReportKeys };
+                const res = await getBankDetailsReport({ skip: 0, limit: EXPORT_LIMIT, ...params });
+                return (res?.data?.data?.reportList || []).map(mapBankDetailsRow);
             },
         },
         {
@@ -204,9 +187,8 @@ export const DataExport: React.FC = () => {
             subtitle: "User KYC verification status & details",
             icon: <FiShield />,
             fetcher: async (params) => {
-                const res = await getKycReport({ limit: 10000, ...params });
-                const list = res?.data?.data?.reportList || [];
-                return { data: list, mappings: KycReportKeys };
+                const res = await getKycReport({ skip: 0, limit: EXPORT_LIMIT, ...params });
+                return (res?.data?.data?.reportList || []).map(mapKycRow);
             },
         },
         {
@@ -215,9 +197,8 @@ export const DataExport: React.FC = () => {
             subtitle: "Product scan count & points breakdown",
             icon: <FiPackage />,
             fetcher: async (params) => {
-                const res = await getProductWiseReport({ limit: 10000, ...params });
-                const list = res?.data?.data?.reportList || [];
-                return { data: list, mappings: ProductWiseReportKeys };
+                const res = await getProductWiseReport({ skip: 0, limit: EXPORT_LIMIT, ...params });
+                return (res?.data?.data?.reportList || []).map(mapProductWiseRow);
             },
         },
         {
@@ -226,9 +207,8 @@ export const DataExport: React.FC = () => {
             subtitle: "Category scan counts & bonus points",
             icon: <FiLayers />,
             fetcher: async (params) => {
-                const res = await getCategoryReport({ limit: 10000, ...params });
-                const list = res?.data?.data?.reportList || [];
-                return { data: list, mappings: CategoryReportKeys };
+                const res = await getCategoryReport({ skip: 0, limit: EXPORT_LIMIT, ...params });
+                return (res?.data?.data?.reportList || []).map(mapCategoryRow);
             },
         },
         {
@@ -237,9 +217,8 @@ export const DataExport: React.FC = () => {
             subtitle: "Failed scan logs & error diagnostics",
             icon: <FiAlertCircle />,
             fetcher: async (params) => {
-                const res = await getErrorTransactionReport({ limit: 10000, ...params });
-                const list = res?.data?.data?.reportList || [];
-                return { data: list, mappings: ErrorTransactionReportKeys };
+                const res = await getErrorTransactionReport({ skip: 0, limit: EXPORT_LIMIT, status: "Failure", ...params });
+                return (res?.data?.data?.reportList || []).map(mapErrorTransactionRow);
             },
         },
         {
@@ -248,31 +227,28 @@ export const DataExport: React.FC = () => {
             subtitle: "Blocked accounts & activity summary",
             icon: <FiUserX />,
             fetcher: async (params) => {
-                const res = await getBlockedMemberReport({ limit: 10000, ...params });
-                const list = res?.data?.data?.reportList || [];
-                return { data: list, mappings: BlockedMemberReportKeys };
+                const res = await getBlockedMemberReport({ skip: 0, limit: EXPORT_LIMIT, ...params });
+                return (res?.data?.data?.reportList || []).map(mapBlockedMemberRow);
             },
         },
         {
             id: "blocked-member-scan",
-            title: "Blocked Member Scan",
+            title: "Blocked Member Scan Report",
             subtitle: "Scan attempts by blocked members",
             icon: <FiGrid />,
             fetcher: async (params) => {
-                const res = await getBlockedMemberQrScanReport({ limit: 10000, ...params });
-                const list = res?.data?.data?.reportList || [];
-                return { data: list, mappings: BlockedMemberScanReportKeys };
+                const res = await getBlockedMemberQrScanReport({ skip: 0, limit: EXPORT_LIMIT, ...params });
+                return (res?.data?.data?.reportList || []).map(mapBlockedMemberScanRow);
             },
         },
         {
             id: "anomaly-transactions",
-            title: "Anomaly Transactions",
+            title: "Anomaly Transactions Report",
             subtitle: "Data quality anomalies for review",
             icon: <FiAlertTriangle />,
             fetcher: async (params) => {
-                const res = await getAnomalyTransactionsReport({ limit: 10000, ...params });
-                const list = res?.data?.data?.reportList || [];
-                return { data: list, mappings: AnomalyTransactionsReportKeys };
+                const res = await getAnomalyTransactionsReport({ skip: 0, limit: EXPORT_LIMIT, ...params });
+                return (res?.data?.data?.reportList || []).map(mapAnomalyTransactionRow);
             },
         },
         {
@@ -281,48 +257,32 @@ export const DataExport: React.FC = () => {
             subtitle: "Shock absorber replacements & SKUs",
             icon: <FiTool />,
             fetcher: async (params) => {
-                const res = await getShockReplacementReport({ limit: 10000, ...params });
-                const list = res?.data?.data?.reportList || [];
-                return { data: list, mappings: ShockReplacementReportKeys };
+                const res = await getShockReplacementReport({ skip: 0, limit: EXPORT_LIMIT, ...params });
+                return (res?.data?.data?.reportList || []).map(mapShockReplacementRow);
             },
         },
     ];
 
-    // Export single card to CSV or Excel
+    // Export single card to CSV or Excel — same rows, sheet name and file name as MIS & Analytics
     const handleExportCard = async (card: ExportCardConfig, format: "csv" | "excel") => {
         setLoadingCards((prev) => ({ ...prev, [card.id]: true }));
         try {
             const params = getActiveFilterParams();
-            const { data, mappings } = await card.fetcher(params);
+            const data = await card.fetcher(params);
             if (!data || data.length === 0) {
                 toast.warn(`No data found for ${card.title}`);
                 return;
             }
 
-            const formattedRows = data.map((item: any) => {
-                return Object.keys(mappings).reduce((acc: any, key: string) => {
-                    const header = mappings[key];
-                    let val = item[key];
-
-                    if (key.toLowerCase().includes("date") || key.toLowerCase().includes("time") || key === "dob" || key === "createdAt" || key === "updatedAt") {
-                        val = formatDate(val);
-                    } else {
-                        val = formatCell(val);
-                    }
-                    acc[header] = val;
-                    return acc;
-                }, {});
-            });
-
-            const worksheet = XLSX.utils.json_to_sheet(formattedRows);
+            const rows = buildExportSheetRows(card.title, data) || [];
+            const worksheet = XLSX.utils.json_to_sheet(rows);
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, card.title.slice(0, 31));
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
 
-            const cleanFileName = card.title.replace(/[^a-zA-Z0-9_\-]/g, "_");
             if (format === "csv") {
-                XLSX.writeFile(workbook, `${cleanFileName}.csv`, { bookType: "csv" });
+                XLSX.writeFile(workbook, `${card.title}.csv`, { bookType: "csv" });
             } else {
-                XLSX.writeFile(workbook, `${cleanFileName}.xlsx`, { bookType: "xlsx" });
+                XLSX.writeFile(workbook, `${card.title}.xlsx`, { bookType: "xlsx" });
             }
             toast.success(`${card.title} downloaded successfully (${format.toUpperCase()})`);
         } catch (error) {
@@ -333,7 +293,7 @@ export const DataExport: React.FC = () => {
         }
     };
 
-    // Export Full Pack: Download single Excel workbook with sheets for all 15 reports
+    // Export Full Pack: one Excel workbook with a sheet per report (sheet named after the MIS report)
     const handleExportFullPack = async () => {
         setIsExportingFull(true);
         toast.info("Generating full export pack, please wait...");
@@ -344,25 +304,11 @@ export const DataExport: React.FC = () => {
 
             for (const card of exportCards) {
                 try {
-                    const { data, mappings } = await card.fetcher(params);
+                    const data = await card.fetcher(params);
                     if (data && data.length > 0) {
-                        const formattedRows = data.map((item: any) => {
-                            return Object.keys(mappings).reduce((acc: any, key: string) => {
-                                const header = mappings[key];
-                                let val = item[key];
-                                if (key.toLowerCase().includes("date") || key.toLowerCase().includes("time") || key === "dob" || key === "createdAt") {
-                                    val = formatDate(val);
-                                } else {
-                                    val = formatCell(val);
-                                }
-                                acc[header] = val;
-                                return acc;
-                            }, {});
-                        });
-
-                        const worksheet = XLSX.utils.json_to_sheet(formattedRows);
-                        const sheetName = card.title.replace(/[^a-zA-Z0-9 ]/g, "").slice(0, 31);
-                        XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+                        const rows = buildExportSheetRows(card.title, data) || [];
+                        const worksheet = XLSX.utils.json_to_sheet(rows);
+                        XLSX.utils.book_append_sheet(workbook, worksheet, card.title.slice(0, 31));
                         addedSheets++;
                     }
                 } catch (e) {
@@ -375,7 +321,7 @@ export const DataExport: React.FC = () => {
                 return;
             }
 
-            XLSX.writeFile(workbook, `ZF_ProPoints_Full_Data_Export_Pack.xlsx`, { bookType: "xlsx" });
+            XLSX.writeFile(workbook, `ZF ProPoints Full Data Export Pack.xlsx`, { bookType: "xlsx" });
             toast.success("Full data export pack downloaded successfully!");
         } catch (error) {
             console.error("Error generating full pack:", error);

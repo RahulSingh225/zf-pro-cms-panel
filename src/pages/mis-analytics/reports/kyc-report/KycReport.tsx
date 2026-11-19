@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import CustomTable, { Column } from "../../../../components/CustomTable";
 import ExporterButton from "../../../../components/ExportButton";
+import { formatKycDocStatus, formatKycStatus, mapKycRow } from "../../../../utils/reportExport";
 import { getKycReport } from "../../../../services/ApiService";
 import { KycReportKeys } from "../../../../utils/ExportKeyMappings";
 import ViewImageModal from "../../../../pages/tickets/components/ViewImageModal";
@@ -59,40 +60,6 @@ const KycReport = () => {
     const formatCell = (value: any) => {
         if (value === null || value === undefined || value === "") return "-";
         return value;
-    };
-
-    const formatStatus = (value: any) => {
-        if (value === "active_members") return "Active User";
-        if (value === "digilocker") return "Digilocker Pending";
-        if (value === "kyc") return "KYC Document Upload Pending";
-        if (value === "incomplete-registration") return "Address and Profile";
-        if (value === "tds-consent") return "TDS Consent Pending";
-        if (value === "kyc-admin") return "Approval Pending";
-        if (value === "kyc-regional-manager" || value === "Regional Manager Approval Pending" || value === "Regional Head Pending") return "Regional Head Pending";
-        if (value === "kyc-marketing-manager" || value === "Marketing Manager Approval Pending" || value === "Marketing Head Pending") return "Marketing Head Pending";
-        return formatCell(value);
-    };
-
-    // Validates and formats a DOB value; returns '-' for invalid or implausible dates
-    const formatDob = (value: any): string => {
-        if (!value || value === '-' || value === 'N/A') return '-';
-        const d = new Date(value);
-        if (isNaN(d.getTime())) return '-';
-        const year = d.getFullYear();
-        // Reject clearly invalid years (before 1900 or in the future)
-        if (year < 1900 || year > new Date().getFullYear()) return '-';
-        // DD-MM-YYYY format — avoids Excel auto-parsing as a date serial
-        return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${year}`;
-    };
-
-    // Formats the KYC doc status to a human-readable title-cased string
-    const formatKycDocStatus = (value: any): string => {
-        if (!value || value === '-') return '-';
-        // Already well-formatted values from DB (e.g. "Approved By Market Head")
-        return String(value)
-            .split(' ')
-            .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-            .join(' ');
     };
 
     const columns: Column[] = [
@@ -221,7 +188,7 @@ const KycReport = () => {
                         const row: any = {};
                         Object.keys(item).forEach(k => {
                             if (k === "status") {
-                                row[k] = formatStatus(item[k]);
+                                row[k] = formatKycStatus(item[k]);
                             } else {
                                 row[k] = formatCell(item[k]);
                             }
@@ -270,35 +237,7 @@ const KycReport = () => {
 
     const fileExporter = async () => {
         const data = await fetchTableData(1, true);
-
-        const formatExportDate = (val: any) => {
-            if (!val) return "-";
-            const d = new Date(val);
-            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
-        };
-
-        const exportData = data.map((item: any) => ({
-            userId: formatCell(item.userId),
-            uniqueCode: formatCell(item.uniqueCode),
-            name: formatCell(item.name),
-            workshopName: formatCell(item.workshopName),
-            zone: formatCell(item.zone),
-            roleName: formatCell(item.roleName),
-            mobileNumber: formatCell(item.mobileNumber),
-            emailId: formatCell(item.emailId),
-            status: formatStatus(item.status),
-            kycVerified: formatCell(item.kycVerified),
-            dob: formatDob(item.dateOfBirth ?? item.dob),
-            createdAt: formatExportDate(item.createdAt),
-            aadhaarNumber: formatCell(item.aadhaarNumber),
-            aadhaarFront: formatCell(item.aadhaarFrontImage ?? item.aadhaarFront),
-            aadhaarBack: formatCell(item.aadhaarBackImage ?? item.aadhaarBack),
-            panFront: formatCell(item.panFrontImage ?? item.panFront),
-            profileImage: formatCell(item.profileImage),
-            kycDocStatus: formatKycDocStatus(item.kycDocStatus),
-        }));
-
-        return exportData;
+        return (data || []).map(mapKycRow);
     };
 
     return (

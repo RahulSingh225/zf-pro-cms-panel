@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import CustomTable, { Column } from "../../../../components/CustomTable";
 import ExporterButton from "../../../../components/ExportButton";
+import { mapCategoryRow } from "../../../../utils/reportExport";
 import { getCategoryReport } from "../../../../services/ApiService";
 import { CategoryReportKeys } from "../../../../utils/ExportKeyMappings";
 
@@ -100,16 +101,7 @@ const CategoryReport = () => {
 
     const fileExporter = async () => {
         const data = await fetchTableData(1, true);
-
-        const exportData = data.map((item: any) => ({
-            categoryName: formatCell(item.categoryName),
-            userType: formatCell(item.userType),
-            productsInCategory: formatCell(item.productsInThisCategory ?? item.productsInCategory),
-            bonusPoints: formatCell(item.bonusPoints),
-            bonusPointsActive: formatCell(item.bonusPointsActive)
-        }));
-
-        return exportData;
+        return (data || []).map(mapCategoryRow);
     };
 
     return (

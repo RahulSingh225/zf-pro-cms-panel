@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import CustomTable, { Column } from "../../../../components/CustomTable";
 import ExporterButton from "../../../../components/ExportButton";
+import { mapBlockedMemberRow } from "../../../../utils/reportExport";
 import { getBlockedMemberReport } from "../../../../services/ApiService";
 import { BlockedMemberReportKeys } from "../../../../utils/ExportKeyMappings";
 
@@ -154,34 +155,7 @@ const BlockedMemberReport = () => {
 
     const fileExporter = async () => {
         const data = await fetchTableData(1, true);
-
-        const formatExportDate = (val: any) => {
-            if (!val) return "-";
-            const d = new Date(val);
-            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
-        };
-
-        const exportData = data.map((item: any) => ({
-            userName: formatCell(item.userName),
-            mobileNumber: formatCell(item.mobileNumber),
-            userType: formatCell(item.userType),
-            district: formatCell(item.district),
-            state: formatCell(item.state),
-            dateOfJoining: formatExportDate(item.dateOfJoining),
-            totalEarnedPoints: formatCell(item.totalEarnedPoints),
-            redeemedPoints: formatCell(item.redeemedPoints),
-            redemptionRequestDate: formatExportDate(item.redemptionRequestDate),
-            redemptionProcessedDate: formatExportDate(item.redemptionProcessedDate),
-            redemptionDetails: formatCell(item.redemptionDetails),
-            upiId: formatCell(item.upiId),
-            accountNumber: formatCell(item.accountNumber),
-            accountHolderName: formatCell(item.accountHolderName),
-            ifscCode: formatCell(item.ifscCode),
-            bankName: formatCell(item.bankName),
-            status: formatCell(item.status)
-        }));
-
-        return exportData;
+        return (data || []).map(mapBlockedMemberRow);
     };
 
     return (

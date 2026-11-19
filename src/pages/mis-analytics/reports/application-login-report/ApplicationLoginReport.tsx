@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import CustomTable, { Column } from "../../../../components/CustomTable";
 import { getApplicationLoginReport } from "../../../../services/ApiService";
 import ExporterButton from "../../../../components/ExportButton";
+import { mapApplicationLoginRow } from "../../../../utils/reportExport";
 
 const ApplicationLoginReport = () => {
     const [fromDate, setFromDate] = useState("");
@@ -13,11 +14,6 @@ const ApplicationLoginReport = () => {
     const [totalRows, setTotalRows] = useState(0);
     const [page, setPage] = useState(1);
     const pageSize = 10;
-
-    const formatCell = (value: any) => {
-        if (value === null || value === undefined || value === "") return "-";
-        return value;
-    };
 
     const columns: Column[] = [
         { key: "userName", label: "User Name" },
@@ -48,20 +44,7 @@ const ApplicationLoginReport = () => {
 
             const res = await getApplicationLoginReport(payload);
 
-            const mapped = res.data.data.reportList.map((item: any) => ({
-                userName: formatCell(item.userName),
-                userCode: formatCell(item.userCode),
-                userMobile: formatCell(item.userMobile),
-                firstLogin: formatCell(item.firstLogin),
-                lastLogin: formatCell(item.lastLogin),
-                loginDevice: formatCell(item.loginDevice),
-                logoutDate: formatCell(item.logoutAt),
-                welcomePoints: formatCell(item.welcomePoints),
-                totalScannedPoints: formatCell(item.scannedPoints),
-                totalRewardPoints: formatCell(item.rewardPoints),
-                totalRedeemedPoints: formatCell(item.redeemedPoints),
-                totalBalancePoints: formatCell(item.balancePoints),
-            }));
+            const mapped = res.data.data.reportList.map(mapApplicationLoginRow);
 
             setTableData(mapped);
             setTotalRows(res.data.data.totalCount);
@@ -122,22 +105,7 @@ const ApplicationLoginReport = () => {
 
             const res = await getApplicationLoginReport(payload);
 
-            const mapped = res.data.data.reportList.map((item: any) => ({
-                userName: formatCell(item.userName),
-                userCode: formatCell(item.userCode),
-                userMobile: formatCell(item.userMobile),
-                firstLogin: formatCell(item.firstLogin),
-                lastLogin: formatCell(item.lastLogin),
-                loginDevice: formatCell(item.loginDevice),
-                logoutDate: formatCell(item.logoutAt),
-                welcomePoints: formatCell(item.welcomePoints),
-                totalScannedPoints: formatCell(item.scannedPoints),
-                totalRewardPoints: formatCell(item.rewardPoints),
-                totalRedeemedPoints: formatCell(item.redeemedPoints),
-                totalBalancePoints: formatCell(item.balancePoints),
-            }));
-
-            return mapped;
+            return res.data.data.reportList.map(mapApplicationLoginRow);
         } catch (err) {
             console.error("EXPORT ERROR:", err);
             return [];

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import CustomTable, { Column } from "../../../../components/CustomTable";
 import { getQrTransactionReport } from "../../../../services/ApiService";
 import ExporterButton from "../../../../components/ExportButton";
+import { mapQrTransactionRow } from "../../../../utils/reportExport";
 
 const QRTransactionReport = () => {
     const [fromDate, setFromDate] = useState("");
@@ -13,11 +14,6 @@ const QRTransactionReport = () => {
     const [totalRows, setTotalRows] = useState(0);
     const [page, setPage] = useState(1);
     const pageSize = 10;
-
-    const formatCell = (value: any) => {
-        if (value === null || value === undefined || value === "") return "-";
-        return value;
-    };
 
     const columns: Column[] = [
         { key: "transactionId", label: "Transaction ID" },
@@ -56,27 +52,7 @@ const QRTransactionReport = () => {
 
             const res = await getQrTransactionReport(payload);
 
-            const mapped = res.data.data.reportList.map((item: any) => ({
-                transactionId: formatCell(item.transactionId),
-                transactionDate: formatCell(item.transactionDate),
-                amount: formatCell(item.amount),
-                paymentStatus: formatCell(item.paymentStatus),
-                qrCodeId: formatCell(item.qrCodeId),
-                partNumber: formatCell(item.partNumber),
-                partName: formatCell(item.partName),
-                userCode: formatCell(item.userCode),
-                userName: formatCell(item.userName),
-                gender: formatCell(item.gender),
-                email: formatCell(item.email),
-                phone: formatCell(item.phone),
-                latitude: formatCell(item.latitude),
-                longitude: formatCell(item.longitude),
-                address: formatCell(item.address),
-                city: formatCell(item.city),
-                state: formatCell(item.state),
-                country: formatCell(item.country),
-                workshopName: formatCell(item.workshopName),
-            }));
+            const mapped = res.data.data.reportList.map(mapQrTransactionRow);
 
             setTableData(mapped);
             setTotalRows(res.data.data.totalCount);
@@ -139,29 +115,7 @@ const QRTransactionReport = () => {
 
             const res = await getQrTransactionReport(payload);
 
-            const mapped = res.data.data.reportList.map((item: any) => ({
-                transactionId: formatCell(item.transactionId),
-                transactionDate: formatCell(item.transactionDate),
-                amount: formatCell(item.amount),
-                paymentStatus: formatCell(item.paymentStatus),
-                qrCodeId: formatCell(item.qrCodeId),
-                partNumber: formatCell(item.partNumber),
-                partName: formatCell(item.partName),
-                userCode: formatCell(item.userCode),
-                userName: formatCell(item.userName),
-                gender: formatCell(item.gender),
-                email: formatCell(item.email),
-                phone: formatCell(item.phone),
-                latitude: formatCell(item.latitude),
-                longitude: formatCell(item.longitude),
-                address: formatCell(item.address),
-                city: formatCell(item.city),
-                state: formatCell(item.state),
-                country: formatCell(item.country),
-                workshopName: formatCell(item.workshopName),
-            }));
-
-            return mapped;
+            return res.data.data.reportList.map(mapQrTransactionRow);
         } catch (err) {
             console.error("EXPORT ERROR:", err);
             return [];

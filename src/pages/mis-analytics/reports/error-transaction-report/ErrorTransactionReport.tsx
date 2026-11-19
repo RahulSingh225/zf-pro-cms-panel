@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import CustomTable, { Column } from "../../../../components/CustomTable";
 import ExporterButton from "../../../../components/ExportButton";
+import { mapErrorTransactionRow } from "../../../../utils/reportExport";
 import { getErrorTransactionReport } from "../../../../services/ApiService";
 import { ErrorTransactionReportKeys } from "../../../../utils/ExportKeyMappings";
 
@@ -137,30 +138,7 @@ const ErrorTransactionReport = () => {
 
     const fileExporter = async () => {
         const data = await fetchTableData(1, true);
-
-        const formatExportDate = (val: any) => {
-            if (!val) return "-";
-            const d = new Date(val);
-            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
-        };
-
-        const exportData = data.map((item: any) => ({
-            userName: formatCell(item.userName),
-            userMobile: formatCell(item.userMobileNumber ?? item.userMobile),
-            dateOfJoining: formatExportDate(item.dateOfJoining),
-            userType: formatCell(item.userType),
-            district: formatCell(item.district),
-            state: formatCell(item.state),
-            scanDate: formatExportDate(item.scanDate),
-            qrDetails: formatCell(item.qrDetails),
-            productCode: formatCell(item.productCode),
-            productDescription: formatCell(item.productDescription),
-            message: formatCell(item.message),
-            productStatus: formatCell(item.productStatus),
-            actionTaken: formatCell(item.actionTaken)
-        }));
-
-        return exportData;
+        return (data || []).map(mapErrorTransactionRow);
     };
 
     return (

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import CustomTable, { Column } from "../../../../components/CustomTable";
 import ExporterButton from "../../../../components/ExportButton";
 import { getShockReplacementReport } from "../../../../services/ApiService";
+import { mapShockReplacementRow } from "../../../../utils/reportExport";
 
 const ShockReplacementReport = () => {
     const [userId, setUserId] = useState("");
@@ -10,11 +11,6 @@ const ShockReplacementReport = () => {
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
     const pageSize = 10;
-
-    const formatCell = (value: any) => {
-        if (value === null || value === undefined || value === "") return "-";
-        return value;
-    };
 
     const columns: Column[] = [
         { key: "id", label: "Record ID" },
@@ -43,15 +39,7 @@ const ShockReplacementReport = () => {
 
             if (response?.data?.code === 200) {
                 const reportList = response?.data?.data?.reportList || [];
-                const mapped = reportList.map((item: any) => ({
-                    id: formatCell(item.id),
-                    userName: formatCell(item.userName),
-                    skuCode: formatCell(item.skuCode || item.sku),
-                    skuName: formatCell(item.skuName || item.sku_name),
-                    quantity: formatCell(item.quantity),
-                    createdAt: formatCell(item.created_at || item.createdAt),
-                    createdBy: formatCell(item.created_by || item.createdBy),
-                }));
+                const mapped = reportList.map(mapShockReplacementRow);
 
                 if (isExport) {
                     return mapped;

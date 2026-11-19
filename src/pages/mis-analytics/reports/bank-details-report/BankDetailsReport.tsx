@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import CustomTable, { Column } from "../../../../components/CustomTable";
 import ExporterButton from "../../../../components/ExportButton";
+import { mapBankDetailsRow } from "../../../../utils/reportExport";
 import { getBankDetailsReport } from "../../../../services/ApiService";
 import { BankDetailsReportKeys } from "../../../../utils/ExportKeyMappings";
 
@@ -121,23 +122,7 @@ const BankDetailsReport = () => {
 
     const fileExporter = async () => {
         const data = await fetchTableData(1, true);
-
-        const exportData = data.map((item: any) => ({
-            userId: formatCell(item.userId),
-            uniqueCode: formatCell(item.uniqueCode),
-            name: formatCell(item.name),
-            roleName: formatCell(item.roleName),
-            mobileNumber: formatCell(item.mobileNumber),
-            bankName: formatCell(item.bankName),
-            accountNumber: formatCell(item.accountNumber),
-            ifscCode: formatCell(item.ifscCode),
-            accountType: formatCell(item.accountType),
-            branchName: formatCell(item.branchName),
-            bankAddress: formatCell(item.bankAddress),
-            upiId: formatCell(item.upiId)
-        }));
-
-        return exportData;
+        return (data || []).map(mapBankDetailsRow);
     };
 
     return (

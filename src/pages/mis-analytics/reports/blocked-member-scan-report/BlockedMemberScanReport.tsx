@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import CustomTable, { Column } from "../../../../components/CustomTable";
 import ExporterButton from "../../../../components/ExportButton";
+import { mapBlockedMemberScanRow } from "../../../../utils/reportExport";
 import { getBlockedMemberQrScanReport } from "../../../../services/ApiService";
 
 const BlockedMemberScanReport = () => {
@@ -139,33 +140,7 @@ const BlockedMemberScanReport = () => {
 
     const fileExporter = async () => {
         const data = await fetchTableData(1, true);
-
-        const formatExportDate = (val: any) => {
-            if (!val || val === "-") return "-";
-            const d = new Date(val);
-            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
-        };
-
-        const exportData = data.map((item: any) => ({
-            userName: formatCell(item.userName),
-            mobileNumber: formatCell(item.mobileNumber),
-            district: formatCell(item.district),
-            state: formatCell(item.state),
-            dateOfJoining: formatExportDate(item.dateOfJoining),
-            scanId: formatCell(item.scanId),
-            dateOfScan: formatExportDate(item.dateOfScan),
-            productCategory: formatCell(item.productCategory),
-            productCode: formatCell(item.productCode),
-            productName: formatCell(item.productName),
-            productDescription: formatCell(item.productDescription),
-            qrDetails: formatCell(item.qrDetails),
-            basePoint: formatCell(item.basePoint),
-            extraBonusPoint: formatCell(item.extraBonusPoint),
-            totalPoints: formatCell(item.totalPoints),
-            scanStatus: formatCell(item.scanStatus)
-        }));
-
-        return exportData;
+        return (data || []).map(mapBlockedMemberScanRow);
     };
 
     return (

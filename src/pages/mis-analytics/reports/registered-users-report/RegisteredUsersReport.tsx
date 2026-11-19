@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import CustomTable, { Column } from "../../../../components/CustomTable";
 import { getregisteredUsersReport } from "../../../../services/ApiService";
 import ExporterButton from "../../../../components/ExportButton";
+import { formatDoj, mapRegisteredUserRow } from "../../../../utils/reportExport";
 
 const RegisteredUsersReport = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -36,33 +37,6 @@ const RegisteredUsersReport = () => {
             return params;
         });
         setPage(1); // Reset page on filter change
-    };
-
-    const formatCell = (value: any) => {
-        if (value === null || value === undefined || value === "") return "-";
-        return value;
-    };
-
-    // Formats a date value as DD-MM-YYYY
-    const formatDoj = (value: any): string => {
-        if (!value) return '-';
-        const d = new Date(value);
-        if (isNaN(d.getTime())) return '-';
-        return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
-    };
-
-    const formatStatus = (value: any) => {
-        if (value === "active_members") return "Active User";
-        if (value === "digilocker") return "Digilocker Pending";
-        if (value === "kyc") return "KYC Document Upload Pending";
-        if (value === "incomplete-registration") return "Address and Profile";
-        if (value === "incomplete-profile") return "Address and Profile";
-        if (value === "tds-consent") return "TDS Consent Pending";
-        if (value === "kyc-admin") return "Admin Approval Pending";
-        if (!value || value === '-') return '-';
-        // Fallback: title-case the raw value
-        return String(value)
-            .split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     };
 
     const columns: Column[] = [
@@ -107,30 +81,7 @@ const RegisteredUsersReport = () => {
 
             const res = await getregisteredUsersReport(payload);
 
-            const mapped = res.data.data.reportList.map((item: any) => ({
-                userId: formatCell(item.userId),
-                uniqueCode: formatCell(item.uniqueCode),
-                roleName: formatCell(item.roleName),
-                status: formatStatus(item.status),
-                email: formatCell(item.email),
-                mobileNumber: formatCell(item.mobile),
-                fullName: formatCell(item.fullName),
-                aadhaarMasked: formatCell(item.aadhaarNumberMasked),
-                panNumber: formatCell(item.panNumber),
-                aadhaarStatus: item.aadhaarStatus ? "Verified" : "Not Verified",
-                gender: formatCell(item.gender),
-                age: formatCell(item.age),
-                country: formatCell(item.country),
-                state: formatCell(item.state),
-                city: formatCell(item.city),
-                pincode: formatCell(item.pincode),
-                zone: formatCell(item.zone),
-                mappedRetailers: Array.isArray(item.mappedRetailers)
-                    ? formatCell(item.mappedRetailers.join(", "))
-                    : formatCell(item.mappedRetailers),
-                workshopName: formatCell(item.workshopName),
-                dateOfJoining: formatDoj(item.dateOfJoining),
-            }));
+            const mapped = res.data.data.reportList.map(mapRegisteredUserRow);
 
             setTableData(mapped);
             setTotalRows(res.data.data.totalCount);
@@ -196,32 +147,7 @@ const RegisteredUsersReport = () => {
 
             const res = await getregisteredUsersReport(payload);
 
-            const mapped = res.data.data.reportList.map((item: any) => ({
-                userId: formatCell(item.userId),
-                uniqueCode: formatCell(item.uniqueCode),
-                roleName: formatCell(item.roleName),
-                status: formatStatus(item.status),
-                email: formatCell(item.email),
-                mobileNumber: formatCell(item.mobile),
-                fullName: formatCell(item.fullName),
-                aadhaarMasked: formatCell(item.aadhaarNumberMasked),
-                panNumber: formatCell(item.panNumber),
-                aadhaarStatus: item.aadhaarStatus ? "Verified" : "Not Verified",
-                gender: formatCell(item.gender),
-                age: formatCell(item.age),
-                country: formatCell(item.country),
-                state: formatCell(item.state),
-                city: formatCell(item.city),
-                pincode: formatCell(item.pincode),
-                zone: formatCell(item.zone),
-                mappedRetailers: Array.isArray(item.mappedRetailers)
-                    ? formatCell(item.mappedRetailers.join(", "))
-                    : formatCell(item.mappedRetailers),
-                workshopName: formatCell(item.workshopName),
-                dateOfJoining: formatDoj(item.dateOfJoining),
-            }));
-
-            return mapped;
+            return res.data.data.reportList.map(mapRegisteredUserRow);
 
         } catch (err) {
             console.error("EXPORT ERROR:", err);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import CustomTable, { Column } from "../../../../components/CustomTable";
 import ExporterButton from "../../../../components/ExportButton";
+import { mapProductWiseRow } from "../../../../utils/reportExport";
 import { getProductWiseReport } from "../../../../services/ApiService";
 import { ProductWiseReportKeys } from "../../../../utils/ExportKeyMappings";
 
@@ -135,31 +136,7 @@ const ProductWiseReport = () => {
 
     const fileExporter = async () => {
         const data = await fetchTableData(1, true);
-
-        const formatExportDate = (val: any) => {
-            if (!val || val === "-") return "-";
-            const d = new Date(val);
-            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
-        };
-
-        const exportData = data.map((item: any) => ({
-            userId: formatCell(item.userId),
-            memberName: formatCell(item.memberName),
-            workshop: formatCell(item.workshop ?? item.workshopName),
-            zone: formatCell(item.zone),
-            city: formatCell(item.city),
-            productCode: formatCell(item.productCode),
-            productCategory: formatCell(item.productCategory),
-            productType: formatCell(item.productType),
-            productDescription: formatCell(item.productDescription),
-            userType: formatCell(item.userType),
-            district: formatCell(item.district),
-            state: formatCell(item.state),
-            scanDate: formatExportDate(item.scanDate),
-            pointsEarned: formatCell(item.pointsEarned)
-        }));
-
-        return exportData;
+        return (data || []).map(mapProductWiseRow);
     };
 
     return (

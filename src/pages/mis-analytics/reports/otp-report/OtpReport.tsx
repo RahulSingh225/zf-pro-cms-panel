@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 
 import CustomTable, { Column } from "../../../../components/CustomTable";
 import ExporterButton from "../../../../components/ExportButton";
+import { formatOtpType, mapOtpRow } from "../../../../utils/reportExport";
 
 // API
 import { getAdminOtpReport, getRoles, getUserList } from "../../../../services/ApiService";
@@ -42,28 +43,6 @@ const OtpReport = () => {
     const formatCell = (value: any) => {
         if (!value && value !== 0) return "-";
         return value;
-    };
-
-    // Converts slug OTP type values to proper human-readable labels
-    // e.g. 'forgot-password' → 'Forgot Password', 'verify-mobile' → 'Verify Mobile'
-    const formatOtpType = (value: any): string => {
-        if (!value) return '-';
-        const knownMap: Record<string, string> = {
-            'forgot-password': 'Forgot Password',
-            'verify-mobile': 'Verify Mobile',
-            'verify-email': 'Verify Email',
-            'login-otp': 'Login OTP',
-            'registration': 'Registration',
-            'resend-otp': 'Resend OTP',
-            'change-password': 'Change Password',
-            'tds-consent': 'TDS Consent',
-        };
-        if (knownMap[value]) return knownMap[value];
-        // Generic fallback: split on hyphens/underscores and Title Case each word
-        return String(value)
-            .split(/[-_]+/)
-            .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-            .join(' ');
     };
 
     // =======================================
@@ -243,11 +222,7 @@ const OtpReport = () => {
                 limit: totalRows
             });
 
-            return res.data.data.map((item: any) => ({
-                ...item,
-                otpType: formatOtpType(item.otpType),
-                isVerified: item.isVerified ? "Yes" : "No",
-            }));
+            return res.data.data.map(mapOtpRow);
         } catch (err) {
             console.error("EXPORT ERROR:", err);
             return [];

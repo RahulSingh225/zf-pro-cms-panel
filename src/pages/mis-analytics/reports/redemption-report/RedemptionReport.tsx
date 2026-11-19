@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import CustomTable, { Column } from "../../../../components/CustomTable";
 import { getRedemptionHistory, getDeliveryStatuses, updateDeliveryStatus } from "../../../../services/ApiService";
 import ExporterButton from "../../../../components/ExportButton";
+import { mapRedemptionRow } from "../../../../utils/reportExport";
 import ViewImageModal from "../../../tickets/components/ViewImageModal";
 import { toast } from "react-toastify";
 
@@ -30,11 +31,6 @@ const RedemptionReport = () => {
 
     // Action Menu State
     const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
-
-    const formatCell = (value: any) => {
-        if (value === null || value === undefined || value === "") return "-";
-        return value;
-    };
 
     const columns: Column[] = [
         { key: "redemptionRef", label: "Redemption ID" },
@@ -116,22 +112,8 @@ const RedemptionReport = () => {
             const res = await getRedemptionHistory(payload);
 
             const mapped = res.data.reportList.map((item: any) => ({
-                redemptionId: item.redemptionId,
-                products: item.products,
-                redemptionRef: formatCell(item.redemptionRef),
-                userName: formatCell(item.userName),
-                userCode: formatCell(item.userCode),
-                redeemedPoints: formatCell(item.redeemedPoints),
-                redemptionMode: formatCell(item.redemptionMode),
-                redemptionStatus: formatCell(item.redemptionStatus),
+                ...mapRedemptionRow(item),
                 statusColor: getStatusColor(item.redemptionStatus),
-                userMobile: formatCell(item.userMobile),
-                userRole: formatCell(item.userRole),
-                dateOfJoining: formatCell(item.dateOfJoining),
-                totalEarnedPoints: formatCell(item.totalEarnedPoints),
-                createdAt: formatCell(item.createdAt),
-                redemptionProcessedDate: formatCell(item.redemptionProcessedDate),
-                redemptionDetails: formatCell(item.redemptionDetails)
             }));
 
             setTableData(mapped);
@@ -219,25 +201,7 @@ const RedemptionReport = () => {
 
             const res = await getRedemptionHistory(payload);
 
-            const mapped = res.data.reportList.map((item: any) => ({
-                redemptionId: item.redemptionId,
-                products: item.products,
-                redemptionRef: formatCell(item.redemptionRef),
-                userName: formatCell(item.userName),
-                userCode: formatCell(item.userCode),
-                redeemedPoints: formatCell(item.redeemedPoints),
-                redemptionMode: formatCell(item.redemptionMode),
-                redemptionStatus: formatCell(item.redemptionStatus),
-                userMobile: formatCell(item.userMobile),
-                userRole: formatCell(item.userRole),
-                dateOfJoining: formatCell(item.dateOfJoining),
-                totalEarnedPoints: formatCell(item.totalEarnedPoints),
-                createdAt: formatCell(item.createdAt),
-                redemptionProcessedDate: formatCell(item.redemptionProcessedDate),
-                redemptionDetails: formatCell(item.redemptionDetails)
-            }));
-
-            return mapped;
+            return res.data.reportList.map(mapRedemptionRow);
         } catch (err) {
             console.error("EXPORT ERROR:", err);
             return [];

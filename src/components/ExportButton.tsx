@@ -1,28 +1,7 @@
-import {
-    ApplicationLoginReportKeys,
-    RegisteredUsersReportKeys,
-    QRTransactionReportKeys,
-    ReferralsReportKeys,
-    RedemptionReportKeys,
-    OtpReportKeys,
-    AmazonMarketplaceKeys,
-    BankDetailsReportKeys,
-    KycReportKeys,
-    ProductWiseReportKeys,
-    CategoryReportKeys,
-    ErrorTransactionReportKeys,
-    NotificationReportKeys,
-    BlockedMemberReportKeys,
-    BlockedMemberScanReportKeys,
-    AnomalyTransactionsReportKeys,
-    CategoriesListKeys,
-    SubCategoriesListKeys,
-    ShockReplacementReportKeys,
-    TicketsListKeys,
-} from "../utils/ExportKeyMappings";
 import * as XLSX from "xlsx";
 import { ExporterType } from "../types/Export";
 import DownloadIcon from "@mui/icons-material/Download";
+import { buildExportSheetRows } from "../utils/reportExport";
 
 const ExporterButton = ({
     exporter,
@@ -34,150 +13,13 @@ const ExporterButton = ({
             const data = await exporter();
             if (!data?.length) return;
 
-            let mappings: any;
-
-            switch (reportName) {
-                case "Application Login Report":
-                    mappings = ApplicationLoginReportKeys;
-                    break;
-
-                case "Registered Users Report":
-                    mappings = RegisteredUsersReportKeys;
-                    break;
-
-                case "QR Transaction Report":
-                    mappings = QRTransactionReportKeys;
-                    break;
-
-                case "Referrals Report":
-                    mappings = ReferralsReportKeys;
-                    break;
-
-                case "Redemption Report":
-                    mappings = RedemptionReportKeys;
-                    break;
-                case "OTP Report":
-                    mappings = OtpReportKeys;
-                    break;
-                case "Amazon Marketplace":
-                    mappings = AmazonMarketplaceKeys;
-                    break;
-                case "Bank Details Report":
-                    mappings = BankDetailsReportKeys;
-                    break;
-                case "KYC Report":
-                    mappings = KycReportKeys;
-                    break;
-                case "Product Wise Report":
-                    mappings = ProductWiseReportKeys;
-                    break;
-                case "Category Report":
-                    mappings = CategoryReportKeys;
-                    break;
-                case "Error Transaction Report":
-                    mappings = ErrorTransactionReportKeys;
-                    break;
-                case "Notification Report":
-                    mappings = NotificationReportKeys;
-                    break;
-                case "Blocked Member Report":
-                    mappings = BlockedMemberReportKeys;
-                    break;
-                case "Blocked Member Scan Report":
-                    mappings = BlockedMemberScanReportKeys;
-                    break;
-                case "Anomaly Transactions Report":
-                    mappings = AnomalyTransactionsReportKeys;
-                    break;
-                case "Categories List":
-                    mappings = CategoriesListKeys;
-                    break;
-                case "Subcategories List":
-                    mappings = SubCategoriesListKeys;
-                    break;
-                case "Shock Replacement Report":
-                    mappings = ShockReplacementReportKeys;
-                    break;
-                case "Tickets List":
-                    mappings = TicketsListKeys;
-                    break;
-
-                default:
-                    console.warn("❗ Export mapping not found for:", reportName);
-                    return;
+            const rows = buildExportSheetRows(reportName, data);
+            if (!rows) {
+                console.warn("❗ Export mapping not found for:", reportName);
+                return;
             }
 
-            const dateFields = [
-                "firstLogin",
-                "lastLogin",
-                "logoutDate",
-                "transactionDate",
-                "dob",
-                "dateOfReferral",
-                "createdAt",
-                "redemptionProcessedDate",
-                "dateOfJoining",
-                "scanDate",
-                "deliveredDate",
-                "sentDate",
-                "redemptionRequestDate",
-                "dateOfScan",
-                "firstScanDate",
-                "lastScanDate",
-                "updatedAt"
-            ];
-
-            const numberFields: string[] = [
-                "TicketID",
-                "quantity",
-                "welcomePoints",
-                "totalScannedPoints",
-                "totalRewardPoints",
-                "totalRedeemedPoints",
-                "totalBalancePoints",
-                "pointsEarnedBySender",
-                "pointsEarnedByReceiver",
-                "redeemedPoints",
-                "totalEarnedPoints",
-                "amount",
-                "productsInCategory",
-                "bonusPoints",
-                "basePoint",
-                "extraBonusPoint",
-                "totalPoints",
-                "anomalyValueScanned",
-                "totalPointsScanned",
-                "frequencyOfAnomaly"
-            ];
-
-            const worksheet = XLSX.utils.json_to_sheet(
-                data.map((ele: any) => {
-                    return Object.keys(mappings).reduce((acc: any, key: any) => {
-
-                        if (dateFields.includes(key)) {
-                            if (!ele[key]) {
-                                acc[mappings[key]] = "-";
-                            } else {
-                                const parsed = new Date(ele[key]);
-                                // If value is already a pre-formatted string (e.g. DD-MM-YYYY from report formatters),
-                                // new Date() will fail — pass the original value through instead of "Invalid Date"
-                                acc[mappings[key]] = isNaN(parsed.getTime())
-                                    ? String(ele[key])
-                                    : parsed.toLocaleString();
-                            }
-                        }
-                        else if (numberFields.includes(key)) {
-                            acc[mappings[key]] = ele[key] ?? 0;
-                        }
-                        else {
-                            acc[mappings[key]] = ele[key] ?? "";
-                        }
-
-                        return acc;
-                    }, {});
-                })
-            );
-
+            const worksheet = XLSX.utils.json_to_sheet(rows);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
             XLSX.writeFile(workbook, `${reportName}.xlsx`);
