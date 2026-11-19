@@ -42,6 +42,7 @@ export const roleModuleAccess: Record<number, string[]> = {
   7: ["dashboard", "qr-management"], // qr_admin
   8: allModules, // evolve_admin — only role that can see Service Config
   9: ["dashboard", "qr-management", "communication", "mis-analytics", "data-export", "process", "members", "manage-workshop"], // client_admin
+  10: ["dashboard", "mis-analytics", "data-export", "process", "members"], // network_team (KYC level 2, national)
 };
 
 

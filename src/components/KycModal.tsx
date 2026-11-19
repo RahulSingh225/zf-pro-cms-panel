@@ -14,6 +14,8 @@ interface KycDocument {
     kycType: string;
     kycDoc: string;
     docStatus: KYCStatus;
+    // Network Team sign-off; "Pending" until NT acts on an RM-approved doc
+    networkTeamDocStatus?: "Pending" | "Approved" | "Rejected" | "Completed";
     kycCreatedAt: string;
     kycUpdatedAt: string | null;
     comment: string | null;
@@ -108,6 +110,20 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, mechanicName, mech
             setLoading(prev => ({ ...prev, [detailId]: false }));
         }
     };
+
+    // Approval chain: Regional Manager → Network Team → Marketing Manager.
+    // docStatus stays "Approved" after RM; networkTeamDocStatus tells whether NT has signed off.
+    const canActOnDoc = (doc: KycDocument): boolean => {
+        const roleId = Number(loggedUser?.userRoleId);
+        if (roleId === ROLES.REGION_MANAGER) return doc.docStatus === "Pending";
+        if (roleId === ROLES.NETWORK_TEAM) return doc.docStatus === "Approved" && doc.networkTeamDocStatus === "Pending";
+        if (roleId === ROLES.MARKETING_MANAGER) return doc.docStatus === "Approved" && doc.networkTeamDocStatus === "Approved";
+        return false;
+    };
+
+    // Marketing approval is the final step, so it completes the document
+    const approveStatus: "Approved" | "Completed" =
+        Number(loggedUser?.userRoleId) === ROLES.MARKETING_MANAGER ? "Completed" : "Approved";
 
     const getDocumentLabel = (kycType: string): string => {
         const labels: Record<string, string> = {
@@ -254,7 +270,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, mechanicName, mech
                                                         value={comments[doc.detailId] || doc.comment || ""}
                                                         onChange={(e) => handleCommentChange(doc.detailId, e.target.value)}
                                                         className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                        disabled={(loggedUser?.userRoleId == ROLES.REGION_MANAGER && doc.docStatus !== "Pending") || (loggedUser?.userRoleId == ROLES.MARKETING_MANAGER && doc.docStatus !== "Approved")}
+                                                        disabled={!canActOnDoc(doc)}
                                                     />
                                                 </div>
                                             )}
@@ -262,11 +278,11 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, mechanicName, mech
                                         <td className="px-6 py-4">
                                             {doc.kycType === "user-profile" || doc.kycType === "profile-picture" ? (
                                                 <span className="text-sm text-gray-400 font-medium">—</span>
-                                            ) : (loggedUser?.userRoleId == ROLES.REGION_MANAGER && doc.docStatus === "Pending") || (loggedUser?.userRoleId == ROLES.MARKETING_MANAGER && doc.docStatus === "Approved") ? (
+                                            ) : canActOnDoc(doc) ? (
                                                 <div className="flex gap-2">
                                                     <button
                                                         type="button"
-                                                        onClick={() => handleStatusUpdate(doc.detailId, loggedUser?.userRoleId == ROLES.MARKETING_MANAGER ? "Completed" : "Approved")}
+                                                        onClick={() => handleStatusUpdate(doc.detailId, approveStatus)}
                                                         disabled={loading[doc.detailId]}
                                                         className="px-4 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >
@@ -345,15 +361,15 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, mechanicName, mech
                                                 value={comments[prefDoc.detailId] || prefDoc.comment || ""}
                                                 onChange={(e) => handleCommentChange(prefDoc.detailId, e.target.value)}
                                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                disabled={(loggedUser?.userRoleId == ROLES.REGION_MANAGER && prefDoc.docStatus !== "Pending") || (loggedUser?.userRoleId == ROLES.MARKETING_MANAGER && prefDoc.docStatus !== "Approved")}
+                                                disabled={!canActOnDoc(prefDoc)}
                                             />
                                         </div>
                                         <div className="flex gap-2 justify-end">
-                                            {(loggedUser?.userRoleId == ROLES.REGION_MANAGER && prefDoc.docStatus === "Pending") || (loggedUser?.userRoleId == ROLES.MARKETING_MANAGER && prefDoc.docStatus === "Approved") ? (
+                                            {canActOnDoc(prefDoc) ? (
                                                 <>
                                                     <button
                                                         type="button"
-                                                        onClick={() => handleStatusUpdate(prefDoc.detailId, loggedUser?.userRoleId == ROLES.MARKETING_MANAGER ? "Completed" : "Approved")}
+                                                        onClick={() => handleStatusUpdate(prefDoc.detailId, approveStatus)}
                                                         disabled={loading[prefDoc.detailId]}
                                                         className="px-4 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >

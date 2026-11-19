@@ -91,7 +91,8 @@ export const Layout: React.FC<LayoutProps> = ({
         "6": "viewer",
         "7": "qr_admin",
         "8": "evolve_admin",
-        "9": "client_admin"
+        "9": "client_admin",
+        "10": "network_team"
     };
 
     const formatRoleLabel = (raw: string) =>
