@@ -490,6 +490,13 @@ export const getSkusByCategoryAndSubcategory = async (
         .then((res) => res);
 };
 
+// Fetch an active SKU (with category & subcategory names) by its exact code
+export const getSkuByCode = async (skuCode: string) => {
+    return api
+        .get(`sku/skus/by-code/${encodeURIComponent(skuCode)}`)
+        .then((res) => res);
+};
+
 export const generateQRCodes = async (quantity: number, skuCode: string) => {
     return api.post("qr/qrs", {
         quantity,

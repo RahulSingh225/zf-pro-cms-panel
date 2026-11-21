@@ -1,153 +1,5 @@
-// // src/components/GenerateQRCodes/GenerateQRCodes.tsx
-
-// import React, { FC } from "react";
-
-// interface GenerateQRCodesProps {
-//   categories: string[];          // Category names
-//   subCategories: string[];       // Subcategory names based on selected category
-//   skuList: string[];             // SKU names based on selected subcategory
-
-//   onCategoryChange: (categoryName: string) => void;
-//   onSubCategoryChange: (subCategoryName: string) => void;
-//   onSubmit: (data: any) => void;
-// }
-
-// const GenerateQRCodes: FC<GenerateQRCodesProps> = ({
-//   categories,
-//   subCategories,
-//   skuList,
-
-//   onCategoryChange,
-//   onSubCategoryChange,
-//   onSubmit,
-// }) => {
-
-//   const handleSubmit = (e: React.FormEvent) => {
-//     e.preventDefault();
-
-//     const form = e.target as HTMLFormElement;
-
-//     const data = {
-//       category: (form.elements.namedItem("category") as HTMLSelectElement).value,
-//       subCategory: (form.elements.namedItem("subCategory") as HTMLSelectElement).value,
-//       sku: (form.elements.namedItem("sku") as HTMLSelectElement).value,
-//       numberOfQrs: (form.elements.namedItem("numberOfQrs") as HTMLInputElement).value,
-//     };
-
-//     onSubmit(data);
-//   };
-
-//   return (
-//     <form
-//       onSubmit={handleSubmit}
-//       className="w-full p-6 bg-white rounded-2xl shadow-sm border"
-//     >
-//       <h2 className="text-xl font-semibold mb-6">Generate QR Codes</h2>
-
-//       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-
-//         {/* Category Dropdown */}
-//         <div className="flex flex-col">
-//           <label className="text-sm font-medium mb-1">Category</label>
-//           <select
-//             name="category"
-//             className="border rounded-lg p-2"
-//             required
-//             onChange={(e) => onCategoryChange(e.target.value)}
-//           >
-//             <option value="">-- Select Category --</option>
-//             {categories.map((cat) => (
-//               <option key={cat} value={cat}>
-//                 {cat}
-//               </option>
-//             ))}
-//           </select>
-//         </div>
-
-//         {/* Subcategory Dropdown */}
-//         <div className="flex flex-col">
-//           <label className="text-sm font-medium mb-1">Subcategory</label>
-//           <select
-//             name="subCategory"
-//             className="border rounded-lg p-2"
-//             required
-//             disabled={subCategories.length === 0}
-//             onChange={(e) => onSubCategoryChange(e.target.value)}
-//           >
-//             <option value="">
-//               {subCategories.length === 0
-//                 ? "Select Category First"
-//                 : "-- Select Subcategory --"}
-//             </option>
-
-//             {subCategories.map((sub) => (
-//               <option key={sub} value={sub}>
-//                 {sub}
-//               </option>
-//             ))}
-//           </select>
-//         </div>
-
-//         {/* SKU Dropdown */}
-//         <div className="flex flex-col">
-//           <label className="text-sm font-medium mb-1">SKU</label>
-//           <select
-//             name="sku"
-//             className="border rounded-lg p-2"
-//             required
-//             disabled={skuList.length === 0}
-//           >
-//             <option value="">
-//               {skuList.length === 0
-//                 ? "Select Subcategory First"
-//                 : "-- Select SKU --"}
-//             </option>
-
-//             {skuList.map((sku) => (
-//               <option key={sku} value={sku}>
-//                 {sku}
-//               </option>
-//             ))}
-//           </select>
-//         </div>
-
-//         {/* Number of QRs */}
-//         <div className="flex flex-col">
-//           <label className="text-sm font-medium mb-1">Number of QRs</label>
-//           <input
-//             name="numberOfQrs"
-//             type="number"
-//             className="border rounded-lg p-2"
-//             placeholder="100"
-//             required
-//           />
-//         </div>
-
-//       </div>
-
-//       {/* Buttons */}
-//       <div className="flex justify-end gap-4 mt-8">
-//         <button
-//           type="button"
-//           className="px-4 py-2 rounded-lg border border-gray-300"
-//         >
-//           Cancel
-//         </button>
-
-//         <button
-//           type="submit"
-//           className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-//         >
-//           Generate QR Codes
-//         </button>
-//       </div>
-//     </form>
-//   );
-// };
-
-// export default GenerateQRCodes;
-
 import React, { FC, useRef } from "react";
+import { ChevronDown, QrCode } from "lucide-react";
 
 interface GenerateQRCodesProps {
   categories: string[];          // Category names
@@ -157,12 +9,30 @@ interface GenerateQRCodesProps {
   isSkusLoading?: boolean;
   hasSelectedCategory?: boolean;
   hasSelectedSubCategory?: boolean;
+  isSubmitting?: boolean;
 
   onCategoryChange: (categoryName: string) => void;
   onSubCategoryChange: (subCategoryName: string) => void;
   onSubmit: (data: any) => void;
-  onCancel: () => void;          // <-- NEW
+  onCancel: () => void;
 }
+
+const labelClass = "text-sm font-semibold text-gray-800 mb-1.5";
+const fieldClass =
+  "w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 " +
+  "placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 " +
+  "disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed";
+
+const Required = () => <span className="text-red-500 ml-0.5">*</span>;
+
+const SelectField: FC<React.SelectHTMLAttributes<HTMLSelectElement>> = ({ children, ...props }) => (
+  <div className="relative">
+    <select {...props} className={`${fieldClass} appearance-none pr-9`}>
+      {children}
+    </select>
+    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-600" />
+  </div>
+);
 
 const GenerateQRCodes: FC<GenerateQRCodesProps> = ({
   categories,
@@ -172,6 +42,7 @@ const GenerateQRCodes: FC<GenerateQRCodesProps> = ({
   isSkusLoading = false,
   hasSelectedCategory = false,
   hasSelectedSubCategory = false,
+  isSubmitting = false,
 
   onCategoryChange,
   onSubCategoryChange,
@@ -206,120 +77,123 @@ const GenerateQRCodes: FC<GenerateQRCodesProps> = ({
   };
 
   return (
-    <form
-      ref={formRef}
-      onSubmit={handleSubmit}
-      className="w-full p-6 bg-white rounded-2xl shadow-sm border"
-    >
-      <h2 className="text-xl font-semibold mb-6">Generate QR Codes</h2>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-
-        {/* Category Dropdown */}
-        <div className="flex flex-col">
-          <label className="text-sm font-medium mb-1">Category</label>
-          <select
-            name="category"
-            className="border rounded-lg p-2"
-            required
-            onChange={(e) => onCategoryChange(e.target.value)}
-            defaultValue=""
-          >
-            <option value="">-- Select Category --</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
+    <div className="w-full overflow-hidden rounded-xl border-2 border-[#174A8B] bg-white shadow-sm">
+      {/* Header */}
+      <div className="bg-[#174A8B] px-5 pt-3">
+        <div className="inline-flex items-center gap-2 border-b-[3px] border-yellow-400 pb-3 text-white">
+          <QrCode className="h-5 w-5" />
+          <span className="text-base font-semibold">QR Generation</span>
         </div>
-
-        {/* Subcategory Dropdown */}
-        <div className="flex flex-col">
-          <label className="text-sm font-medium mb-1">Subcategory</label>
-          <select
-            name="subCategory"
-            className="border rounded-lg p-2"
-            required
-            disabled={subCategories.length === 0 || isSubCategoriesLoading}
-            onChange={(e) => onSubCategoryChange(e.target.value)}
-            defaultValue=""
-          >
-            <option value="">
-              {isSubCategoriesLoading
-                ? "Loading..."
-                : subCategories.length === 0
-                  ? (hasSelectedCategory ? "No Options Available" : "Select Category First")
-                  : "-- Select Subcategory --"}
-            </option>
-
-            {subCategories.map((sub) => (
-              <option key={sub} value={sub}>
-                {sub}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* SKU Dropdown */}
-        <div className="flex flex-col">
-          <label className="text-sm font-medium mb-1">SKU</label>
-          <select
-            name="sku"
-            className="border rounded-lg p-2"
-            required
-            disabled={skuList.length === 0 || isSkusLoading}
-            defaultValue=""
-          >
-            <option value="">
-              {isSkusLoading
-                ? "Loading..."
-                : skuList.length === 0
-                  ? (hasSelectedSubCategory ? "No Options Available" : "Select Subcategory First")
-                  : "-- Select SKU --"}
-            </option>
-
-            {skuList.map((sku) => (
-              <option key={sku} value={sku}>
-                {sku}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Number of QRs */}
-        <div className="flex flex-col">
-          <label className="text-sm font-medium mb-1">Number of QRs</label>
-          <input
-            name="numberOfQrs"
-            type="number"
-            className="border rounded-lg p-2"
-            placeholder="100"
-            required
-            defaultValue=""
-          />
-        </div>
-
       </div>
 
-      {/* Buttons */}
-      <div className="flex justify-end gap-4 mt-8">
-        <button
-          type="button"
-          className="px-4 py-2 rounded-lg border border-gray-300"
-          onClick={handleLocalCancel}
-        >
-          Cancel
-        </button>
+      <form ref={formRef} onSubmit={handleSubmit} className="bg-[#F8FAFC] px-5 py-4">
+        <h2 className="text-base font-semibold text-gray-900 mb-4">Generate QR Codes</h2>
 
-        <button
-          type="submit"
-          className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-        >
-          Generate QR Codes
-        </button>
-      </div>
-    </form>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Category */}
+          <div className="flex flex-col">
+            <label className={labelClass}>Category<Required /></label>
+            <SelectField
+              name="category"
+              required
+              onChange={(e) => onCategoryChange(e.target.value)}
+              defaultValue=""
+            >
+              <option value="">Select Category</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </SelectField>
+          </div>
+
+          {/* Subcategory */}
+          <div className="flex flex-col">
+            <label className={labelClass}>Subcategory<Required /></label>
+            <SelectField
+              name="subCategory"
+              required
+              disabled={subCategories.length === 0 || isSubCategoriesLoading}
+              onChange={(e) => onSubCategoryChange(e.target.value)}
+              defaultValue=""
+            >
+              <option value="">
+                {isSubCategoriesLoading
+                  ? "Loading..."
+                  : subCategories.length === 0
+                    ? (hasSelectedCategory ? "No Options Available" : "Select Subcategory")
+                    : "Select Subcategory"}
+              </option>
+              {subCategories.map((sub) => (
+                <option key={sub} value={sub}>
+                  {sub}
+                </option>
+              ))}
+            </SelectField>
+          </div>
+
+          {/* SKU */}
+          <div className="flex flex-col">
+            <label className={labelClass}>SKU<Required /></label>
+            <SelectField
+              name="sku"
+              required
+              disabled={skuList.length === 0 || isSkusLoading}
+              defaultValue=""
+            >
+              <option value="">
+                {isSkusLoading
+                  ? "Loading..."
+                  : skuList.length === 0
+                    ? (hasSelectedSubCategory ? "No Options Available" : "Select SKU")
+                    : "Select SKU"}
+              </option>
+              {skuList.map((sku) => (
+                <option key={sku} value={sku}>
+                  {sku}
+                </option>
+              ))}
+            </SelectField>
+          </div>
+
+          {/* Number of QRs */}
+          <div className="flex flex-col">
+            <label className={labelClass}>Number of QR's<Required /></label>
+            <input
+              name="numberOfQrs"
+              type="number"
+              min={1}
+              step={1}
+              className={fieldClass}
+              placeholder="Enter Quantity"
+              required
+              defaultValue=""
+            />
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex justify-end gap-3 mt-4">
+          <button
+            type="button"
+            className="h-10 px-5 rounded-lg border border-[#174A8B] bg-white text-sm font-semibold text-[#174A8B] hover:bg-blue-50"
+            onClick={handleLocalCancel}
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="h-10 px-5 inline-flex items-center gap-2 rounded-lg bg-[#1440B8] text-sm font-semibold text-white hover:bg-[#10349A] disabled:opacity-60"
+          >
+            <QrCode className="h-4 w-4" />
+            Generate QR Codes
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 

@@ -105,6 +105,7 @@
         "./src/pages/qr-management/qr-generation/qr-generation.tsx",
         "./src/pages/qr-management/qr-generation/components/qr-generation-form.tsx",
         "./src/pages/qr-management/qr-generation/components/qr-history.tsx",
+        "./src/pages/qr-management/qr-generation/components/qr-sku-search.tsx",
         "./src/pages/qr-management/qr-generation/components/qr-stats.tsx",
         "./src/pages/role-management/userrolemanagement.tsx",
         "./src/pages/role-management/access-logs/accesslogspage.tsx",

@@ -75,7 +75,7 @@ const Qr = () => {
             </div>
 
             {/* CONTENT SECTION */}
-            <div className="mt-8 px-6">
+            <div className="mt-7 px-6">
                 {activeTab === "qr-generation" && <QrGeneration />}
                 {/* {activeTab === "audit-logs" && <AccessLogsScreen />} */}
             </div>

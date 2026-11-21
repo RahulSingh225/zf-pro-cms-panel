@@ -18,6 +18,7 @@ import {
 
 import toast, { Toaster } from "react-hot-toast";
 import QRStats from "./components/qr-stats";
+import QRSkuSearch from "./components/qr-sku-search";
 
 interface CategoryItem {
     categoryId: number;
@@ -58,6 +59,7 @@ const QrGeneration: FC = () => {
 
     const [isSubCategoriesLoading, setIsSubCategoriesLoading] = useState<boolean>(false);
     const [isSkusLoading, setIsSkusLoading] = useState<boolean>(false);
+    const [isGenerating, setIsGenerating] = useState<boolean>(false);
 
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -188,7 +190,28 @@ const QrGeneration: FC = () => {
         }
     };
 
-    // Generate QR codes
+    // Shared generation call — used by both the dropdown form and the SKU code search
+    const generateForSku = async (skuCode: string, quantity: number): Promise<boolean> => {
+        setIsGenerating(true);
+        try {
+            await generateQRCodes(quantity, skuCode);
+
+            toast.success("QR code generation in progress. Please check later.");
+
+            // Refresh history explicitly
+            fetchQRHistory(1, historyFilters);
+            setPage(1);
+            return true;
+        } catch (error) {
+            console.error("Error generating QR Codes:", error);
+            toast.error("Failed to generate QR Codes");
+            return false;
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    // Generate QR codes (dropdown form)
     const handleGenerate = async (formData: any) => {
         const { sku, numberOfQrs } = formData;
 
@@ -198,19 +221,7 @@ const QrGeneration: FC = () => {
             return;
         }
 
-        try {
-            await generateQRCodes(Number(numberOfQrs), selectedSku.skuCode);
-
-            toast.success("QR code generation in progress. Please check later.");
-
-            // Refresh history explicitly
-            fetchQRHistory(1, historyFilters);
-            setPage(1);
-
-        } catch (error) {
-            console.error("Error generating QR Codes:", error);
-            toast.error("Failed to generate QR Codes");
-        }
+        await generateForSku(selectedSku.skuCode, Number(numberOfQrs));
     };
 
     // Cancel → clear form
@@ -257,7 +268,13 @@ const QrGeneration: FC = () => {
                 isSkusLoading={isSkusLoading}
                 hasSelectedCategory={!!selectedCategoryId}
                 hasSelectedSubCategory={!!selectedSubCategoryId}
+                isSubmitting={isGenerating}
             />
+
+            {/* Generate by SKU code search */}
+            <div className="mt-8">
+                <QRSkuSearch isSubmitting={isGenerating} onGenerate={generateForSku} />
+            </div>
 
             {/* QR Batch Table */}
             <div className="mt-10">
